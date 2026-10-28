@@ -287,22 +287,23 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
 
   <div class="card hidden" id="payCard" style="margin-top:16px">
     <h2>تسجيل دفعة من المندوب</h2>
-    <div class="row r3">
+    <div class="row">
       <div><label>كاش</label><input type="number" id="pCash" min="0" placeholder="0"></div>
       <div><label>انستاباي / فودافون كاش</label>
-        <select id="pWalletType">
+        <select id="pWalletType" onchange="onWalletTypeChange()">
           <option value="">-- اختار --</option>
           <option value="انستاباي">انستاباي</option>
           <option value="فودافون كاش">فودافون كاش</option>
         </select>
-        <input type="number" id="pWallet" min="0" style="margin-top:8px" placeholder="المبلغ">
-      </div>
-      <div><label>المستلم</label>
-        <select id="pReceiver">
-          <option value="">-- اختار --</option>
-          <option value="Ahmed">Ahmed</option>
-          <option value="Ibrahim">Ibrahim</option>
-        </select>
+        <div id="walletExtra" class="hidden">
+          <input type="number" id="pWallet" min="0" style="margin-top:8px" placeholder="المبلغ">
+          <label>المستلم</label>
+          <select id="pReceiver">
+            <option value="">-- اختار --</option>
+            <option value="Ahmed">Ahmed</option>
+            <option value="Ibrahim">Ibrahim</option>
+          </select>
+        </div>
       </div>
     </div>
     <label>ملاحظات</label>
@@ -628,21 +629,32 @@ async function submitCollection() {
   finally { setBusy('btnCollect', false); }
 }
 
+function onWalletTypeChange() {
+  const has = !!document.getElementById('pWalletType').value;
+  document.getElementById('walletExtra').classList.toggle('hidden', !has);
+  if (!has) {
+    document.getElementById('pWallet').value = '';
+    document.getElementById('pReceiver').value = '';
+  }
+}
+
 async function submitPayment() {
   const rep = document.getElementById('rep').value;
-  const cash = document.getElementById('pCash').value;
-  const wallet = document.getElementById('pWallet').value;
+  const cash = Number(document.getElementById('pCash').value) || 0;
+  const wallet = Number(document.getElementById('pWallet').value) || 0;
   const walletType = document.getElementById('pWalletType').value;
-  const note = document.getElementById('pNote').value;
   const receiver = document.getElementById('pReceiver').value;
+  const note = document.getElementById('pNote').value;
   if (!rep) return showMsg('', 'اختار المندوب الأول', false);
-  if (Number(wallet) > 0 && !walletType) return showMsg('', 'اختار انستاباي أو فودافون كاش', false);
-  if (!receiver) return showMsg('', 'اختار المستلم', false);
+  if (!cash && !wallet) return showMsg('', 'اكتب مبلغ الكاش أو المحفظة', false);
+  if (wallet > 0 && !walletType) return showMsg('', 'اختار انستاباي أو فودافون كاش', false);
+  if (wallet > 0 && !receiver) return showMsg('', 'اختار المستلم', false);
   setBusy('btnPay', true);
   try {
     const finalNote = [walletType ? '(' + walletType + ')' : '', note].filter(Boolean).join(' ');
-    await call('recordPayment', { rep, cash: cash || 0, wallet: wallet || 0, note: finalNote, receiver });
+    await call('recordPayment', { rep, cash, wallet, note: finalNote, receiver: wallet > 0 ? receiver : '' });
     ['pCash', 'pWallet', 'pWalletType', 'pReceiver', 'pNote'].forEach(id => document.getElementById(id).value = '');
+    onWalletTypeChange();
     showMsg('', 'تم تسجيل الدفعة', true);
     await loadAll();
   } catch (e) { showMsg('', e.message, false); }
