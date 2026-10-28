@@ -2,24 +2,26 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>حسابات الشحنات</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#6a7392; --line:#e3e7f3;
+  --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#5b6485; --line:#e3e7f3;
   --p1:#4f46e5; --p2:#7c3aed; --sky:#0ea5e9; --ok:#10b981; --warn:#f59e0b; --bad:#ef4444;
   --shadow:0 4px 18px rgba(79,70,229,.08); --shadow-lg:0 14px 34px rgba(79,70,229,.20);
   --r:16px; --nav:#1e1b4b; --nav2:#312e81;
+  --mono:'JetBrains Mono',Consolas,'Courier New',monospace;
 }
 [data-theme="dark"]{
-  --bg:#0d1125; --surface:#161b37; --surface2:#1d2346; --ink:#e8ebff; --muted:#98a2cf; --line:#2a3160;
+  --bg:#0d1125; --surface:#161b37; --surface2:#1d2346; --ink:#f1f3ff; --muted:#b4bde3; --line:#2a3160;
   --shadow:0 4px 18px rgba(0,0,0,.35); --shadow-lg:0 14px 34px rgba(0,0,0,.5);
   --nav:#0a0d1f; --nav2:#171a3d;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
   margin:0;font-family:'Cairo',Tahoma,Arial,sans-serif;color:var(--ink);
   background:
@@ -79,7 +81,7 @@ section>.card:nth-child(3){animation-delay:.16s}
 section>.card:nth-child(4){animation-delay:.24s}
 h2{margin:0 0 14px;font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px}
 h2::before{content:"";width:5px;height:20px;border-radius:4px;background:linear-gradient(var(--p1),var(--p2))}
-label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:10px 0 5px}
+label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:10px 0 5px}
 input,select,textarea{
   width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;font-size:15px;
   background:var(--surface2);color:var(--ink);font-family:inherit;outline:none;
@@ -87,9 +89,8 @@ input,select,textarea{
 }
 input:hover,select:hover,textarea:hover{border-color:rgba(79,70,229,.45)}
 input:focus,select:focus,textarea:focus{border-color:var(--p1);box-shadow:0 0 0 4px rgba(79,70,229,.15);background:var(--surface)}
-textarea{min-height:170px;resize:vertical;direction:ltr;text-align:left;font-family:monospace}
+textarea{min-height:170px;resize:vertical;direction:ltr;text-align:left;font-family:var(--mono);font-size:14px;font-weight:500}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.row.r3{grid-template-columns:1fr 1fr 1fr}
 
 button{position:relative;overflow:hidden;font-family:inherit}
 button.primary{
@@ -105,7 +106,7 @@ button.busy::after{content:"";display:inline-block;width:16px;height:16px;margin
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
 .stat{
-  position:relative;overflow:hidden;color:#fff;border-radius:14px;padding:16px;font-size:13px;font-weight:600;
+  position:relative;overflow:hidden;color:#fff;border-radius:14px;padding:16px;font-size:13px;font-weight:700;
   display:flex;flex-direction:column;gap:6px;box-shadow:0 8px 20px rgba(0,0,0,.14);
   animation:pop .6s both;transition:transform .3s,box-shadow .3s;
 }
@@ -120,22 +121,22 @@ button.busy::after{content:"";display:inline-block;width:16px;height:16px;margin
 .s-amber{background:linear-gradient(135deg,#d97706,#fbbf24)}
 .s-sky{background:linear-gradient(135deg,#0284c7,#38bdf8)}
 
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
-th{background:var(--surface2);color:var(--muted);font-size:12.5px;font-weight:700;padding:11px 10px;text-align:right;white-space:nowrap}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14.5px}
+th{background:var(--surface2);color:var(--muted);font-size:13px;font-weight:800;padding:11px 10px;text-align:right;white-space:nowrap}
 th:first-child{border-radius:0 10px 10px 0}th:last-child{border-radius:10px 0 0 10px}
-td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle;transition:background .2s}
+td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle;transition:background .2s;font-weight:600}
 td input,td select{margin:0}
 tr{animation:rowIn .45s both;animation-delay:calc(var(--i,0) * 30ms)}
 tr:hover td{background:rgba(79,70,229,.07)}
 tr.tot td{background:var(--surface2);font-weight:800;border-bottom:0}
-.tscroll{overflow-x:auto}
-.dt{direction:ltr;unicode-bidi:plaintext;text-align:right;white-space:nowrap;font-size:13px;color:var(--muted)}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dt{font-family:var(--mono);font-size:13.5px;font-weight:700;color:var(--ink);direction:ltr;unicode-bidi:plaintext;text-align:right;white-space:nowrap}
 .pos{color:var(--bad);font-weight:800}
 .zero{color:var(--ok);font-weight:800}
-.awb{direction:ltr;font-family:monospace;font-size:13.5px;background:var(--surface2);padding:3px 9px;border-radius:8px;display:inline-block}
-.badge{display:inline-grid;place-items:center;min-width:28px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-radius:8px;padding:2px 8px;font-weight:800}
+.awb{direction:ltr;font-family:var(--mono);font-size:14.5px;font-weight:700;letter-spacing:.4px;color:var(--ink);background:var(--surface2);padding:4px 10px;border-radius:8px;display:inline-block;border:1px solid var(--line)}
+.badge{display:inline-grid;place-items:center;min-width:28px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-radius:8px;padding:2px 8px;font-weight:800;font-family:var(--mono)}
 
-.st{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-weight:700;font-size:12.5px}
+.st{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-weight:700;font-size:12.5px;white-space:nowrap}
 .st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
 .st-pend{background:rgba(99,102,241,.15);color:#6366f1}
 .st-pend::before{animation:pulse 1.4s infinite}
@@ -152,14 +153,13 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
   background:linear-gradient(90deg,rgba(79,70,229,.12),transparent);border-right:4px solid var(--p1);border-radius:10px;
   animation:slideIn .45s both;
 }
-.sub{margin-top:16px;font-weight:700;color:var(--muted);font-size:14px}
-.loader{text-align:center;color:var(--muted);padding:26px;font-weight:600}
+.sub{margin-top:16px;font-weight:800;color:var(--muted);font-size:14px}
+.loader{text-align:center;color:var(--muted);padding:26px;font-weight:700}
 .spin{display:inline-block;width:20px;height:20px;margin-left:10px;vertical-align:-5px;border:3px solid var(--line);border-top-color:var(--p1);border-radius:50%;animation:spin .8s linear infinite}
-.msg.err{display:block;margin-top:10px;padding:12px;border-radius:12px;background:rgba(239,68,68,.12);color:var(--bad);font-weight:600;animation:fadeUp .4s}
+.msg.err{display:block;margin-top:10px;padding:12px;border-radius:12px;background:rgba(239,68,68,.12);color:var(--bad);font-weight:700;animation:fadeUp .4s}
 .hidden{display:none!important}
-#count,#pCount,#lCount{color:var(--p1)}
+#count,#pCount,#lCount{color:var(--p1);font-family:var(--mono)}
 
-/* زر الحذف (السلة) */
 .del{width:34px;height:34px;padding:0;border:0;border-radius:10px;cursor:pointer;display:inline-grid;place-items:center;
   background:rgba(239,68,68,.14);color:var(--bad);transition:background .2s,color .2s,transform .2s}
 .del:hover,.del:focus-visible{background:var(--bad);color:#fff;transform:scale(1.08);outline:none}
@@ -193,20 +193,41 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+/* ===== الموبايل ===== */
 @media(max-width:700px){
-  header{padding:14px}
+  header{padding:14px 14px}
   header h1{font-size:18px}
   header p,#hdDate{display:none}
-  .row,.row.r3{grid-template-columns:1fr}
-  main{margin:14px auto 96px;padding:0 10px}
+  .row{grid-template-columns:1fr}
+  main{margin:12px auto 100px;padding:0 10px}
+  .card{padding:14px}
   nav{
     position:fixed;bottom:0;left:0;right:0;top:auto;width:100%;height:auto;z-index:50;
-    flex-direction:row;gap:2px;padding:6px;overflow-x:auto;border-radius:18px 18px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.25);
+    flex-direction:row;gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));overflow-x:auto;border-radius:18px 18px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.25);
   }
-  nav button{flex-direction:column;gap:3px;padding:8px 10px;min-width:76px;font-size:11px;text-align:center;justify-content:center;animation:fadeUp .4s forwards}
+  nav button{flex-direction:column;gap:3px;padding:8px 8px;min-width:72px;font-size:11px;text-align:center;justify-content:center;animation:fadeUp .4s forwards}
   nav button:hover{transform:none}
   nav button.active::before{right:25%;left:25%;top:0;bottom:auto;width:auto;height:3px}
   .stat b{font-size:22px}
+  .awb{font-size:14px;padding:3px 8px}
+  .dt{font-size:13px}
+
+  /* الجداول تتحول لكروت */
+  table.rt thead{display:none}
+  table.rt,table.rt tbody,table.rt tr,table.rt td{display:block;width:100%}
+  table.rt tr{
+    background:var(--surface2);border:1px solid var(--line);border-radius:14px;
+    padding:6px 12px;margin-bottom:10px;animation:fadeUp .4s both;
+  }
+  table.rt tr:hover td{background:transparent}
+  table.rt td{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    border:0;padding:8px 0;text-align:left;font-size:14px;
+  }
+  table.rt td+td{border-top:1px dashed var(--line)}
+  table.rt td::before{content:attr(data-l);color:var(--muted);font-size:12.5px;font-weight:800;flex-shrink:0}
+  table.rt tr.tot{background:linear-gradient(90deg,rgba(79,70,229,.12),var(--surface2))}
+  table.rt tr.tot td{font-weight:800}
 }
 </style>
 </head>
@@ -224,7 +245,7 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
   </div>
   <div class="hd-right">
     <span id="hdDate"></span>
-    <button class="theme" onclick="toggleTheme()" title="تبديل الوضع">
+    <button class="theme" onclick="toggleTheme()" title="تبديل الوضع" aria-label="تبديل الوضع">
       <svg class="i" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
     </button>
   </div>
@@ -454,6 +475,19 @@ function stBadge(status) {
   return '<span class="st st-' + (STC[status] || 'pend') + '">' + esc(status) + '</span>';
 }
 
+// جدول بيتحول لكروت على الموبايل: headers لأسماء الأعمدة، rows مصفوفة خلايا (HTML)، foot صف إجمالي اختياري
+function tbl(headers, rows, foot) {
+  let h = '<div class="tscroll"><table class="rt"><thead><tr>' +
+    headers.map(x => '<th>' + x + '</th>').join('') + '</tr></thead><tbody>';
+  rows.forEach(r => {
+    h += '<tr>' + r.map((c, i) => '<td data-l="' + esc(headers[i]) + '">' + c + '</td>').join('') + '</tr>';
+  });
+  if (foot) {
+    h += '<tr class="tot">' + foot.map((c, i) => '<td data-l="' + esc(headers[i]) + '">' + c + '</td>').join('') + '</tr>';
+  }
+  return h + '</tbody></table></div>';
+}
+
 function animateNum(el, to) {
   const from = el._v || 0;
   el._v = to;
@@ -597,20 +631,22 @@ function renderAll() {
   const box = document.getElementById('allBox');
   if (!names.length) { box.innerHTML = '<div class="loader">لا يوجد بيانات بعد</div>'; return; }
   let tc = 0, tp = 0, tb = 0, ts = 0, tm = 0;
-  let html = '<div class="tscroll"><table><tr><th>المندوب</th><th>الإجمالي</th><th>مدفوع</th><th>المديونية</th><th>الشحنات</th><th>العمولة</th></tr>';
-  names.forEach(n => {
+  const rows = names.map(n => {
     const b = balances[n];
     tc += b.collected; tp += b.paid; tb += b.balance;
     ts += b.shipments || 0; tm += b.commission || 0;
-    html += '<tr><td>' + esc(n) + '</td><td>' + fmt(b.collected) + '</td><td>' + fmt(b.paid) +
-            '</td><td class="' + (b.balance > 0 ? 'pos' : 'zero') + '">' + fmt(b.balance) + '</td>' +
-            '<td>' + fmt(b.shipments) + '</td><td>' + fmt(b.commission) + ' <span class="dt">(' + (b.rate || 27) + ')</span></td></tr>';
+    return [
+      esc(n),
+      fmt(b.collected),
+      fmt(b.paid),
+      '<span class="' + (b.balance > 0 ? 'pos' : 'zero') + '">' + fmt(b.balance) + '</span>',
+      fmt(b.shipments),
+      fmt(b.commission) + ' <span class="dt">(' + (b.rate || 27) + ')</span>'
+    ];
   });
-  html += '<tr class="tot"><td>الإجمالي</td><td>' + fmt(tc) + '</td><td>' + fmt(tp) +
-          '</td><td class="' + (tb > 0 ? 'pos' : 'zero') + '">' + fmt(tb) + '</td>' +
-          '<td>' + fmt(ts) + '</td><td>' + fmt(tm) + '</td></tr>';
-  html += '</table></div>';
-  setHTML(box, html);
+  const foot = ['الإجمالي', fmt(tc), fmt(tp),
+    '<span class="' + (tb > 0 ? 'pos' : 'zero') + '">' + fmt(tb) + '</span>', fmt(ts), fmt(tm)];
+  setHTML(box, tbl(['المندوب', 'الإجمالي', 'مدفوع', 'المديونية', 'الشحنات', 'العمولة'], rows, foot));
 }
 
 async function submitCollection() {
@@ -672,17 +708,24 @@ async function submitAdd() {
   try {
     const r = await call('addShipments', { rep, awbs });
     document.getElementById('aAwb').value = '';
-    showMsg('', 'تمت إضافة ' + r.added + ' شحنة لقيد التوصيل' +
-      (r.skipped ? ' — و' + r.skipped + ' رقم كان موجود قبل كده (التفاصيل تحت)' : ''), true);
-    if (r.skippedList && r.skippedList.length) {
-      let html = '<div class="sub">الشحنات الموجودة قبل كده وحالتها الحالية:</div>' +
-        '<table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th></tr>';
-      r.skippedList.forEach(x => {
-        html += '<tr><td><span class="awb">' + esc(x.awb) + '</span></td><td>' + esc(x.rep) +
-                '</td><td>' + stBadge(x.status) + '</td></tr>';
-      });
-      setHTML(skipBox, html + '</table>');
+
+    const parts = ['تمت إضافة ' + r.added + ' شحنة'];
+    if (r.reopened) parts.push('ورجّعت ' + r.reopened + ' شحنة لقيد التوصيل');
+    if (r.skipped) parts.push('و' + r.skipped + ' رقم ما اتغيرش (التفاصيل تحت)');
+    showMsg('', parts.join(' — '), true);
+
+    let html = '';
+    if (r.reopenedList && r.reopenedList.length) {
+      html += '<div class="sub">شحنات رجعت لقيد التوصيل من المؤجل/المتهرب:</div>' +
+        tbl(['رقم البوليصة', 'المندوب', 'الحالة السابقة'],
+          r.reopenedList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>', esc(x.rep), stBadge(x.status)]));
     }
+    if (r.skippedList && r.skippedList.length) {
+      html += '<div class="sub">شحنات موجودة ما اتغيرتش:</div>' +
+        tbl(['رقم البوليصة', 'المندوب', 'الحالة'],
+          r.skippedList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>', esc(x.rep), stBadge(x.status)]));
+    }
+    if (html) setHTML(skipBox, html);
   } catch (e) { showMsg('', e.message, false); }
   finally { setBusy('btnAdd', false); }
 }
@@ -700,20 +743,17 @@ async function loadPending() {
       box.innerHTML = '<div class="loader">مفيش شحنات قيد التوصيل لهذا المندوب</div>';
       return;
     }
-    let html = '<table><tr><th>رقم البوليصة</th><th>الحالة</th><th>تاريخ التأجيل</th></tr>';
-    pendingRows.forEach((x, i) => {
-      html += '<tr>' +
-        '<td><span class="awb">' + esc(x.awb) + '</span></td>' +
-        '<td><select class="stSel" data-i="' + i + '" onchange="onStChange(this)">' +
-          '<option value="">— بدون تغيير</option>' +
-          '<option value="ناجح">ناجح</option>' +
-          '<option value="مؤجل">مؤجل</option>' +
-          '<option value="متهرب">متهرب</option>' +
-        '</select></td>' +
-        '<td><input type="date" class="dtInp" data-i="' + i + '" style="display:none"></td>' +
-        '</tr>';
-    });
-    setHTML(box, html + '</table>');
+    const rows = pendingRows.map((x, i) => [
+      '<span class="awb">' + esc(x.awb) + '</span>',
+      '<select class="stSel" data-i="' + i + '" onchange="onStChange(this)">' +
+        '<option value="">— بدون تغيير</option>' +
+        '<option value="ناجح">ناجح</option>' +
+        '<option value="مؤجل">مؤجل</option>' +
+        '<option value="متهرب">متهرب</option>' +
+      '</select>',
+      '<input type="date" class="dtInp" data-i="' + i + '" style="display:none">'
+    ]);
+    setHTML(box, tbl(['رقم البوليصة', 'الحالة', 'تاريخ التأجيل'], rows));
   } catch (e) { box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>'; }
 }
 
@@ -757,21 +797,17 @@ async function loadAllShips() {
     const rows = (await call('getAllShipments', { rep, status })) || [];
     document.getElementById('lCount').textContent = '(' + rows.length + ')';
     if (!rows.length) { box.innerHTML = '<div class="loader">مفيش شحنات بالفلتر ده</div>'; return; }
-    let html = '<div class="tscroll"><table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th>' +
-      '<th>تاريخ الإضافة</th><th>تاريخ التأجيل</th><th>آخر تحديث</th><th>حذف</th></tr>';
-    rows.forEach(x => {
-      html += '<tr>' +
-        '<td><span class="awb">' + esc(x.awb) + '</span></td>' +
-        '<td>' + esc(x.rep) + '</td>' +
-        '<td>' + stBadge(x.status) + '</td>' +
-        '<td class="dt">' + dmyt(x.added) + '</td>' +
-        '<td class="dt">' + (x.postDate ? dmy(x.postDate) : '-') + '</td>' +
-        '<td class="dt">' + dmyt(x.updated) + '</td>' +
-        '<td><button class="del" title="حذف الشحنة" aria-label="حذف الشحنة" data-awb="' + esc(x.awb) +
-          '" onclick="deleteShipment(this)">' + TRASH + '</button></td>' +
-        '</tr>';
-    });
-    setHTML(box, html + '</table></div>');
+    const data = rows.map(x => [
+      '<span class="awb">' + esc(x.awb) + '</span>',
+      esc(x.rep),
+      stBadge(x.status),
+      '<span class="dt">' + dmyt(x.added) + '</span>',
+      '<span class="dt">' + (x.postDate ? dmy(x.postDate) : '-') + '</span>',
+      '<span class="dt">' + dmyt(x.updated) + '</span>',
+      '<button class="del" title="حذف الشحنة" aria-label="حذف الشحنة" data-awb="' + esc(x.awb) +
+        '" onclick="deleteShipment(this)">' + TRASH + '</button>'
+    ]);
+    setHTML(box, tbl(['رقم البوليصة', 'المندوب', 'الحالة', 'تاريخ الإضافة', 'تاريخ التأجيل', 'آخر تحديث', 'حذف'], data));
   } catch (e) { box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>'; }
 }
 
@@ -813,25 +849,25 @@ function renderPostponed() {
     box.innerHTML = '<div class="loader">لا توجد شحنات مؤجلة' + (filter ? ' في هذا اليوم' : '') + '</div>';
     return;
   }
-  let html = '', lastDate = null, table = '';
+  let html = '', lastDate = null, group = [];
+  const flush = () => {
+    if (group.length) html += tbl(['رقم', 'المندوب', 'رقم البوليصة'], group);
+    group = [];
+  };
   list.forEach(x => {
     if (x.date !== lastDate) {
-      if (table) html += table + '</table>';
+      flush();
       html += '<div class="day">تاريخ التأجيل: ' + dmy(x.date) + '</div>';
-      table = '<table><tr><th>رقم</th><th>المندوب</th><th>رقم البوليصة</th></tr>';
       lastDate = x.date;
     }
-    table += '<tr><td><span class="badge">' + x.no + '</span></td><td>' + esc(x.rep) +
-             '</td><td><span class="awb">' + esc(x.awb) + '</span></td></tr>';
+    group.push([
+      '<span class="badge">' + x.no + '</span>',
+      esc(x.rep),
+      '<span class="awb">' + esc(x.awb) + '</span>'
+    ]);
   });
-  if (table) html += table + '</table>';
+  flush();
   setHTML(box, html);
-}
-
-function simpleTable(headers, rows) {
-  let html = '<table><tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr>';
-  rows.forEach(r => { html += '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>'; });
-  return html + '</table>';
 }
 
 async function loadSummary() {
@@ -850,12 +886,12 @@ async function loadSummary() {
       '</div>';
     html += '<div class="day">الشحنات المؤجلة</div>';
     html += r.postList.length
-      ? simpleTable(['رقم البوليصة', 'تاريخ التأجيل'],
-          r.postList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>', dmy(x.date)]))
+      ? tbl(['رقم البوليصة', 'تاريخ التأجيل'],
+          r.postList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>', '<span class="dt">' + dmy(x.date) + '</span>']))
       : '<div class="loader">لا يوجد</div>';
     html += '<div class="day">الشحنات المتهربة</div>';
     html += r.escList.length
-      ? simpleTable(['رقم البوليصة'], r.escList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>']))
+      ? tbl(['رقم البوليصة'], r.escList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>']))
       : '<div class="loader">لا يوجد</div>';
     setHTML(box, html);
   } catch (e) { box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>'; }
