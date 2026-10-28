@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ================= Design System ================= */
 :root{
   --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#6a7392; --line:#e3e7f3;
   --p1:#4f46e5; --p2:#7c3aed; --sky:#0ea5e9; --ok:#10b981; --warn:#f59e0b; --bad:#ef4444;
@@ -32,7 +31,6 @@ body{
 [data-theme="dark"] input,[data-theme="dark"] select{color-scheme:dark}
 .i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
-/* ================= Header ================= */
 header{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:18px 22px;color:#fff;
@@ -50,7 +48,6 @@ header p{margin:2px 0 0;font-size:12.5px;opacity:.85}
 .theme{width:42px;height:42px;border-radius:12px;border:0;color:#fff;background:rgba(255,255,255,.18);cursor:pointer;display:grid;place-items:center;transition:transform .3s,background .3s}
 .theme:hover{background:rgba(255,255,255,.3);transform:rotate(25deg) scale(1.08)}
 
-/* ================= Layout / Nav ================= */
 .layout{display:flex;align-items:flex-start}
 nav{
   width:210px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;
@@ -72,7 +69,6 @@ nav button.active::before{content:"";position:absolute;right:0;top:20%;bottom:20
 main{flex:1;min-width:0;max-width:980px;margin:20px auto;padding:0 16px;display:block}
 section{animation:tabIn .45s cubic-bezier(.2,.8,.2,1)}
 
-/* ================= Cards ================= */
 .card{
   background:var(--surface);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);border:1px solid var(--line);
   overflow-x:auto;animation:fadeUp .5s both;transition:transform .3s,box-shadow .3s,background .4s,border-color .4s;
@@ -95,7 +91,6 @@ textarea{min-height:170px;resize:vertical;direction:ltr;text-align:left;font-fam
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .row.r3{grid-template-columns:1fr 1fr 1fr}
 
-/* ================= Buttons ================= */
 button{position:relative;overflow:hidden;font-family:inherit}
 button.primary{
   width:100%;margin-top:14px;padding:13px;border:0;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;
@@ -108,7 +103,6 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
 button.busy::after{content:"";display:inline-block;width:16px;height:16px;margin-right:10px;vertical-align:-3px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 .rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.4);transform:scale(0);animation:rip .6s linear;pointer-events:none}
 
-/* ================= Stats ================= */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
 .stat{
   position:relative;overflow:hidden;color:#fff;border-radius:14px;padding:16px;font-size:13px;font-weight:600;
@@ -126,7 +120,6 @@ button.busy::after{content:"";display:inline-block;width:16px;height:16px;margin
 .s-amber{background:linear-gradient(135deg,#d97706,#fbbf24)}
 .s-sky{background:linear-gradient(135deg,#0284c7,#38bdf8)}
 
-/* ================= Tables ================= */
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
 th{background:var(--surface2);color:var(--muted);font-size:12.5px;font-weight:700;padding:11px 10px;text-align:right;white-space:nowrap}
 th:first-child{border-radius:0 10px 10px 0}th:last-child{border-radius:10px 0 0 10px}
@@ -142,7 +135,6 @@ tr.tot td{background:var(--surface2);font-weight:800;border-bottom:0}
 .awb{direction:ltr;font-family:monospace;font-size:13.5px;background:var(--surface2);padding:3px 9px;border-radius:8px;display:inline-block}
 .badge{display:inline-grid;place-items:center;min-width:28px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-radius:8px;padding:2px 8px;font-weight:800}
 
-/* Status badges */
 .st{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-weight:700;font-size:12.5px}
 .st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
 .st-pend{background:rgba(99,102,241,.15);color:#6366f1}
@@ -155,7 +147,6 @@ select.stSel[data-v="مؤجل"]{border-color:var(--warn);background:rgba(245,158
 select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68,68,.12)}
 .dtInp{animation:pop .35s both}
 
-/* ================= Misc ================= */
 .day{
   display:flex;align-items:center;gap:8px;margin:18px 0 8px;padding:9px 14px;font-weight:800;color:var(--p1);
   background:linear-gradient(90deg,rgba(79,70,229,.12),transparent);border-right:4px solid var(--p1);border-radius:10px;
@@ -168,7 +159,12 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
 .hidden{display:none!important}
 #count,#pCount,#lCount{color:var(--p1)}
 
-/* Toasts */
+/* زر الحذف (السلة) */
+.del{width:34px;height:34px;padding:0;border:0;border-radius:10px;cursor:pointer;display:inline-grid;place-items:center;
+  background:rgba(239,68,68,.14);color:var(--bad);transition:background .2s,color .2s,transform .2s}
+.del:hover,.del:focus-visible{background:var(--bad);color:#fff;transform:scale(1.08);outline:none}
+.del .i{width:17px;height:17px}
+
 #toasts{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:10px;width:min(92vw,430px);pointer-events:none}
 .toast{
   position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;color:#fff;font-weight:700;font-size:14.5px;
@@ -180,7 +176,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
 .toast::after{content:"";position:absolute;bottom:0;right:0;height:3px;background:rgba(255,255,255,.7);animation:bar 4.5s linear forwards}
 .toast.out{animation:toastOut .35s forwards}
 
-/* ================= Keyframes ================= */
 @keyframes shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
@@ -198,7 +193,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* ================= Mobile ================= */
 @media(max-width:700px){
   header{padding:14px}
   header h1{font-size:18px}
@@ -257,7 +251,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
 
 <main>
 
-<!-- ===== الحسابات ===== -->
 <section id="tab-acc">
   <div class="card">
     <label>اختار المندوب</label>
@@ -323,7 +316,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
   </div>
 </section>
 
-<!-- ===== إضافة شحنات ===== -->
 <section id="tab-add" class="hidden">
   <div class="card">
     <h2>إضافة شحنات لقيد التوصيل</h2>
@@ -336,7 +328,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
   </div>
 </section>
 
-<!-- ===== قيد التوصيل ===== -->
 <section id="tab-pend" class="hidden">
   <div class="card">
     <label>اختار المندوب</label>
@@ -349,7 +340,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
   </div>
 </section>
 
-<!-- ===== كل الشحنات ===== -->
 <section id="tab-all" class="hidden">
   <div class="card">
     <div class="row">
@@ -373,7 +363,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
   </div>
 </section>
 
-<!-- ===== الشحنات المأجلة ===== -->
 <section id="tab-post" class="hidden">
   <div class="card">
     <div class="row" style="align-items:end">
@@ -389,7 +378,6 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
   </div>
 </section>
 
-<!-- ===== ملخص المندوب ===== -->
 <section id="tab-rep" class="hidden">
   <div class="card">
     <div class="row">
@@ -413,55 +401,35 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcok
 
 const STC = { 'قيد التوصيل': 'pend', 'ناجح': 'ok', 'مؤجل': 'post', 'متهرب': 'esc' };
 const LOADING = '<div class="loader"><span class="spin"></span>جاري التحميل...</div>';
+const TRASH = '<svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg>';
 
 let balances = {};
 let pendingRows = [];
 let postList = [];
 
-// اتصال JSONP بالـ Web app (بيتجاوز مشاكل CORS)
 function call(action, params = {}) {
   return new Promise((resolve, reject) => {
     const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
     const qs = new URLSearchParams({ ...params, action, callback: cbName });
     const script = document.createElement('script');
-
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('انتهت مهلة الاتصال، جرب تاني'));
-    }, 20000);
-
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      script.remove();
-    }
-
+    const timer = setTimeout(() => { cleanup(); reject(new Error('انتهت مهلة الاتصال، جرب تاني')); }, 20000);
+    function cleanup() { clearTimeout(timer); delete window[cbName]; script.remove(); }
     window[cbName] = res => {
       cleanup();
       if (res && res.ok) resolve(res.data);
       else reject(new Error((res && res.error) || 'حصل خطأ'));
     };
-
-    script.onerror = () => {
-      cleanup();
-      reject(new Error('فشل الاتصال بالسيرفر، اتأكد من اللينك والنشر'));
-    };
-
+    script.onerror = () => { cleanup(); reject(new Error('فشل الاتصال بالسيرفر، اتأكد من اللينك والنشر')); };
     script.src = API_URL + '?' + qs.toString();
     document.body.appendChild(script);
   });
 }
 
-// ---------- أدوات عامة ----------
-
-function fmt(n) {
-  return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
-}
+function fmt(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
 
 function esc(s) {
   return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function dmy(iso) {
@@ -478,9 +446,7 @@ function dmyt(v) {
 
 function todayISO() {
   const d = new Date();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return d.getFullYear() + '-' + m + '-' + day;
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 function stBadge(status) {
@@ -504,10 +470,7 @@ function animateNum(el, to) {
 function setHTML(el, html) {
   el.innerHTML = html;
   el.querySelectorAll('tr').forEach((tr, i) => tr.style.setProperty('--i', Math.min(i, 24)));
-  el.querySelectorAll('[data-count]').forEach(n => {
-    n._v = 0;
-    animateNum(n, Number(n.dataset.count));
-  });
+  el.querySelectorAll('[data-count]').forEach(n => { n._v = 0; animateNum(n, Number(n.dataset.count)); });
 }
 
 function showMsg(id, text, ok) {
@@ -522,10 +485,7 @@ function showMsg(id, text, ok) {
   t.appendChild(ic);
   t.appendChild(tx);
   wrap.appendChild(t);
-  setTimeout(() => {
-    t.classList.add('out');
-    setTimeout(() => t.remove(), 350);
-  }, 4500);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 350); }, 4500);
 }
 
 function setBusy(btnId, busy) {
@@ -548,11 +508,7 @@ document.addEventListener('click', e => {
   setTimeout(() => s.remove(), 600);
 });
 
-// ---------- الوضع الفاتح / الغامق ----------
-
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-}
+function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); }
 
 function toggleTheme() {
   const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -573,27 +529,19 @@ function toggleTheme() {
     el.textContent = new Date().toLocaleDateString('ar-EG', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo'
     });
-  } catch (e) {
-    el.textContent = dmy(todayISO());
-  }
+  } catch (e) { el.textContent = dmy(todayISO()); }
 })();
-
-// ---------- التنقل ----------
 
 function showTab(name) {
   ['acc', 'add', 'pend', 'all', 'post', 'rep'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
   });
-  document.querySelectorAll('nav button').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === name);
-  });
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (name === 'pend') loadPending();
   if (name === 'all') loadAllShips();
   if (name === 'post') loadPostponed();
 }
-
-// ---------- الحسابات ----------
 
 function fillRepSelects(names) {
   ['rep', 'aRep', 'pRep', 'sRep', 'lRep'].forEach(id => {
@@ -619,8 +567,7 @@ async function loadAll() {
     renderAll();
     onRepChange();
   } catch (e) {
-    document.getElementById('allBox').innerHTML =
-      '<div class="msg err">خطأ: ' + esc(e.message) + '</div>';
+    document.getElementById('allBox').innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>';
   }
 }
 
@@ -647,10 +594,7 @@ function onRepChange() {
 function renderAll() {
   const names = Object.keys(balances).sort();
   const box = document.getElementById('allBox');
-  if (!names.length) {
-    box.innerHTML = '<div class="loader">لا يوجد بيانات بعد</div>';
-    return;
-  }
+  if (!names.length) { box.innerHTML = '<div class="loader">لا يوجد بيانات بعد</div>'; return; }
   let tc = 0, tp = 0, tb = 0, ts = 0, tm = 0;
   let html = '<div class="tscroll"><table><tr><th>المندوب</th><th>الإجمالي</th><th>مدفوع</th><th>المديونية</th><th>الشحنات</th><th>العمولة</th></tr>';
   names.forEach(n => {
@@ -673,7 +617,6 @@ async function submitCollection() {
   const amount = document.getElementById('cAmount').value;
   const note = document.getElementById('cNote').value;
   if (!rep) return showMsg('', 'اختار المندوب الأول', false);
-
   setBusy('btnCollect', true);
   try {
     await call('recordCollection', { rep, amount, note });
@@ -681,11 +624,8 @@ async function submitCollection() {
     document.getElementById('cNote').value = '';
     showMsg('', 'تم حفظ الإجمالي', true);
     await loadAll();
-  } catch (e) {
-    showMsg('', e.message, false);
-  } finally {
-    setBusy('btnCollect', false);
-  }
+  } catch (e) { showMsg('', e.message, false); }
+  finally { setBusy('btnCollect', false); }
 }
 
 async function submitPayment() {
@@ -698,26 +638,16 @@ async function submitPayment() {
   if (!rep) return showMsg('', 'اختار المندوب الأول', false);
   if (Number(wallet) > 0 && !walletType) return showMsg('', 'اختار انستاباي أو فودافون كاش', false);
   if (!receiver) return showMsg('', 'اختار المستلم', false);
-
   setBusy('btnPay', true);
   try {
     const finalNote = [walletType ? '(' + walletType + ')' : '', note].filter(Boolean).join(' ');
     await call('recordPayment', { rep, cash: cash || 0, wallet: wallet || 0, note: finalNote, receiver });
-    document.getElementById('pCash').value = '';
-    document.getElementById('pWallet').value = '';
-    document.getElementById('pWalletType').value = '';
-    document.getElementById('pReceiver').value = '';
-    document.getElementById('pNote').value = '';
+    ['pCash', 'pWallet', 'pWalletType', 'pReceiver', 'pNote'].forEach(id => document.getElementById(id).value = '');
     showMsg('', 'تم تسجيل الدفعة', true);
     await loadAll();
-  } catch (e) {
-    showMsg('', e.message, false);
-  } finally {
-    setBusy('btnPay', false);
-  }
+  } catch (e) { showMsg('', e.message, false); }
+  finally { setBusy('btnPay', false); }
 }
-
-// ---------- إضافة شحنات ----------
 
 async function submitAdd() {
   const rep = document.getElementById('aRep').value;
@@ -726,14 +656,12 @@ async function submitAdd() {
   skipBox.innerHTML = '';
   if (!rep) return showMsg('', 'اختار المندوب الأول', false);
   if (!awbs.trim()) return showMsg('', 'الصق أرقام البوليصة الأول', false);
-
   setBusy('btnAdd', true);
   try {
     const r = await call('addShipments', { rep, awbs });
     document.getElementById('aAwb').value = '';
     showMsg('', 'تمت إضافة ' + r.added + ' شحنة لقيد التوصيل' +
       (r.skipped ? ' — و' + r.skipped + ' رقم كان موجود قبل كده (التفاصيل تحت)' : ''), true);
-
     if (r.skippedList && r.skippedList.length) {
       let html = '<div class="sub">الشحنات الموجودة قبل كده وحالتها الحالية:</div>' +
         '<table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th></tr>';
@@ -743,25 +671,15 @@ async function submitAdd() {
       });
       setHTML(skipBox, html + '</table>');
     }
-  } catch (e) {
-    showMsg('', e.message, false);
-  } finally {
-    setBusy('btnAdd', false);
-  }
+  } catch (e) { showMsg('', e.message, false); }
+  finally { setBusy('btnAdd', false); }
 }
-
-// ---------- قيد التوصيل ----------
 
 async function loadPending() {
   const rep = document.getElementById('pRep').value;
   const box = document.getElementById('pendBox');
   document.getElementById('pCount').textContent = '';
-  if (!rep) {
-    pendingRows = [];
-    box.innerHTML = '<div class="loader">اختار مندوب</div>';
-    return;
-  }
-
+  if (!rep) { pendingRows = []; box.innerHTML = '<div class="loader">اختار مندوب</div>'; return; }
   box.innerHTML = LOADING;
   try {
     pendingRows = (await call('getPending', { rep })) || [];
@@ -770,7 +688,6 @@ async function loadPending() {
       box.innerHTML = '<div class="loader">مفيش شحنات قيد التوصيل لهذا المندوب</div>';
       return;
     }
-
     let html = '<table><tr><th>رقم البوليصة</th><th>الحالة</th><th>تاريخ التأجيل</th></tr>';
     pendingRows.forEach((x, i) => {
       html += '<tr>' +
@@ -784,11 +701,8 @@ async function loadPending() {
         '<td><input type="date" class="dtInp" data-i="' + i + '" style="display:none"></td>' +
         '</tr>';
     });
-    html += '</table>';
-    setHTML(box, html);
-  } catch (e) {
-    box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>';
-  }
+    setHTML(box, html + '</table>');
+  } catch (e) { box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>'; }
 }
 
 function onStChange(sel) {
@@ -803,7 +717,6 @@ function onStChange(sel) {
 async function saveUpdates() {
   const updates = [];
   let missing = null;
-
   document.querySelectorAll('.stSel').forEach(sel => {
     if (!sel.value) return;
     const i = Number(sel.dataset.i);
@@ -811,24 +724,17 @@ async function saveUpdates() {
     if (sel.value === 'مؤجل' && !date && !missing) missing = pendingRows[i].awb;
     updates.push({ awb: pendingRows[i].awb, status: sel.value, date: date });
   });
-
   if (missing) return showMsg('', 'اختار تاريخ التأجيل للشحنة ' + missing, false);
   if (!updates.length) return showMsg('', 'مفيش تغييرات لحفظها', false);
-
   setBusy('btnSave', true);
   try {
     const n = await call('updateShipments', { updates: JSON.stringify(updates) });
     showMsg('', 'تم تحديث ' + n + ' شحنة', true);
     await loadPending();
     loadAll();
-  } catch (e) {
-    showMsg('', e.message, false);
-  } finally {
-    setBusy('btnSave', false);
-  }
+  } catch (e) { showMsg('', e.message, false); }
+  finally { setBusy('btnSave', false); }
 }
-
-// ---------- كل الشحنات ----------
 
 async function loadAllShips() {
   const rep = document.getElementById('lRep').value;
@@ -838,13 +744,9 @@ async function loadAllShips() {
   try {
     const rows = (await call('getAllShipments', { rep, status })) || [];
     document.getElementById('lCount').textContent = '(' + rows.length + ')';
-    if (!rows.length) {
-      box.innerHTML = '<div class="loader">مفيش شحنات بالفلتر ده</div>';
-      return;
-    }
-
+    if (!rows.length) { box.innerHTML = '<div class="loader">مفيش شحنات بالفلتر ده</div>'; return; }
     let html = '<div class="tscroll"><table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th>' +
-      '<th>تاريخ الإضافة</th><th>تاريخ التأجيل</th><th>آخر تحديث</th></tr>';
+      '<th>تاريخ الإضافة</th><th>تاريخ التأجيل</th><th>آخر تحديث</th><th>حذف</th></tr>';
     rows.forEach(x => {
       html += '<tr>' +
         '<td><span class="awb">' + esc(x.awb) + '</span></td>' +
@@ -853,15 +755,28 @@ async function loadAllShips() {
         '<td class="dt">' + dmyt(x.added) + '</td>' +
         '<td class="dt">' + (x.postDate ? dmy(x.postDate) : '-') + '</td>' +
         '<td class="dt">' + dmyt(x.updated) + '</td>' +
+        '<td><button class="del" title="حذف الشحنة" aria-label="حذف الشحنة" data-awb="' + esc(x.awb) +
+          '" onclick="deleteShipment(this)">' + TRASH + '</button></td>' +
         '</tr>';
     });
     setHTML(box, html + '</table></div>');
-  } catch (e) {
-    box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>';
-  }
+  } catch (e) { box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>'; }
 }
 
-// ---------- الشحنات المأجلة ----------
+async function deleteShipment(btn) {
+  const awb = btn.dataset.awb;
+  if (!confirm('متأكد إنك عايز تحذف الشحنة ' + awb + '؟\nمش هينفع تتراجع.')) return;
+  btn.disabled = true;
+  try {
+    await call('deleteShipment', { awb });
+    showMsg('', 'تم حذف الشحنة ' + awb, true);
+    await loadAllShips();
+    loadAll();
+  } catch (e) {
+    btn.disabled = false;
+    showMsg('', e.message, false);
+  }
+}
 
 async function loadPostponed() {
   document.getElementById('postBox').innerHTML = LOADING;
@@ -869,8 +784,7 @@ async function loadPostponed() {
     postList = (await call('getPostponed')) || [];
     renderPostponed();
   } catch (e) {
-    document.getElementById('postBox').innerHTML =
-      '<div class="msg err">خطأ: ' + esc(e.message) + '</div>';
+    document.getElementById('postBox').innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>';
   }
 }
 
@@ -883,16 +797,11 @@ function renderPostponed() {
   const filter = document.getElementById('fDate').value;
   const box = document.getElementById('postBox');
   const list = filter ? postList.filter(x => x.date === filter) : postList;
-
   if (!list.length) {
     box.innerHTML = '<div class="loader">لا توجد شحنات مؤجلة' + (filter ? ' في هذا اليوم' : '') + '</div>';
     return;
   }
-
-  let html = '';
-  let lastDate = null;
-  let table = '';
-
+  let html = '', lastDate = null, table = '';
   list.forEach(x => {
     if (x.date !== lastDate) {
       if (table) html += table + '</table>';
@@ -904,17 +813,12 @@ function renderPostponed() {
              '</td><td><span class="awb">' + esc(x.awb) + '</span></td></tr>';
   });
   if (table) html += table + '</table>';
-
   setHTML(box, html);
 }
 
-// ---------- ملخص المندوب ----------
-
 function simpleTable(headers, rows) {
   let html = '<table><tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr>';
-  rows.forEach(r => {
-    html += '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>';
-  });
+  rows.forEach(r => { html += '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>'; });
   return html + '</table>';
 }
 
@@ -922,42 +826,29 @@ async function loadSummary() {
   const rep = document.getElementById('sRep').value;
   const date = document.getElementById('sDate').value;
   const box = document.getElementById('sBox');
-
-  if (!rep || !date) {
-    box.innerHTML = '<div class="loader">اختار المندوب واليوم</div>';
-    return;
-  }
-
+  if (!rep || !date) { box.innerHTML = '<div class="loader">اختار المندوب واليوم</div>'; return; }
   box.innerHTML = LOADING;
   try {
     const r = await call('getDayReport', { rep, date });
-
     let html = '<div class="stats">' +
       '<div class="stat s-green">ناجح<b data-count="' + r.ok + '">0</b></div>' +
       '<div class="stat s-amber">مؤجل<b data-count="' + r.postponed + '">0</b></div>' +
       '<div class="stat s-red">متهرب<b data-count="' + r.escaped + '">0</b></div>' +
       '<div class="stat s-sky">قيد التوصيل حالياً<b data-count="' + r.pending + '">0</b></div>' +
       '</div>';
-
     html += '<div class="day">الشحنات المؤجلة</div>';
     html += r.postList.length
       ? simpleTable(['رقم البوليصة', 'تاريخ التأجيل'],
-          r.postList.map(x => [ '<span class="awb">' + esc(x.awb) + '</span>', dmy(x.date) ]))
+          r.postList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>', dmy(x.date)]))
       : '<div class="loader">لا يوجد</div>';
-
     html += '<div class="day">الشحنات المتهربة</div>';
     html += r.escList.length
-      ? simpleTable(['رقم البوليصة'],
-          r.escList.map(x => [ '<span class="awb">' + esc(x.awb) + '</span>' ]))
+      ? simpleTable(['رقم البوليصة'], r.escList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>']))
       : '<div class="loader">لا يوجد</div>';
-
     setHTML(box, html);
-  } catch (e) {
-    box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>';
-  }
+  } catch (e) { box.innerHTML = '<div class="msg err">خطأ: ' + esc(e.message) + '</div>'; }
 }
 
-// ---------- بداية ----------
 document.getElementById('sDate').value = todayISO();
 loadAll();
 </script>
