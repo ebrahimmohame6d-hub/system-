@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>حسابات المندوبين</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1c2233;--muted:#6b7280;--accent:#2563eb;--ok:#16a34a;--bad:#dc2626;--line:#e5e7eb}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--accent);color:#fff;padding:16px;text-align:center;font-size:20px;font-weight:bold}
+main{max-width:900px;margin:16px auto;padding:0 12px;display:grid;gap:16px}
+.card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+h2{margin:0 0 12px;font-size:17px}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{width:100%;margin-top:12px;padding:12px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-size:16px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats div{background:var(--bg);border-radius:8px;padding:10px;font-size:13px;color:var(--muted)}
+.stats b{display:block;font-size:18px;margin-top:4px;color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right}
+.pos{color:var(--bad);font-weight:bold}
+.zero{color:var(--ok);font-weight:bold}
+.msg{margin-top:10px;padding:10px;border-radius:8px;display:none;font-size:14px}
+.msg.ok{display:block;background:#dcfce7;color:#166534}
+.msg.err{display:block;background:#fee2e2;color:#991b1b}
+.loader{text-align:center;color:var(--muted);padding:20px}
+.hidden{display:none}
+@media(max-width:600px){.row{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>حسابات المندوبين</header>
+<main>
+
+<div class="card">
+  <label>اختار المندوب</label>
+  <select id="rep" onchange="onRepChange()"><option value="">-- اختار --</option></select>
+  <div id="repBox" class="hidden" style="margin-top:14px">
+    <div class="stats">
+      <div>إجمالي المحصّل<b id="sCollected">0</b></div>
+      <div>إجمالي المدفوع<b id="sPaid">0</b></div>
+      <div>المديونية<b id="sBalance">0</b></div>
+    </div>
+  </div>
+</div>
+
+<div class="card hidden" id="payCard">
+  <h2>تسجيل دفعة من المندوب</h2>
+  <div class="row">
+    <div><label>كاش</label><input type="number" id="pCash" min="0" value="0"></div>
+    <div><label>انستاباي / فودافون كاش</label><input type="number" id="pWallet" min="0" value="0"></div>
+  </div>
+  <label>ملاحظات</label>
+  <input type="text" id="pNote">
+  <button id="btnPay" onclick="submitPayment()">تسجيل الدفعة</button>
+  <div id="pMsg" class="msg"></div>
+</div>
+
+<div class="card hidden" id="collectCard">
+  <h2>تسجيل تحصيل جديد</h2>
+  <label>المبلغ المحصّل</label>
+  <input type="number" id="cAmount" min="0">
+  <label>ملاحظات</label>
+  <input type="text" id="cNote">
+  <button id="btnCollect" onclick="submitCollection()">تسجيل التحصيل</button>
+  <div id="cMsg" class="msg"></div>
+</div>
+
+<div class="card">
+  <h2>أرصدة كل المندوبين</h2>
+  <div id="allBox"><div class="loader">جاري التحميل...</div></div>
+</div>
+
+</main>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
+
+let balances = {};
+
+// اتصال JSONP بالـ Web app (بيتجاوز مشاكل CORS)
+function call(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const qs = new URLSearchParams({ ...params, action, callback: cbName });
+    const script = document.createElement('script');
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('انتهت مهلة الاتصال، جرب تاني'));
+    }, 20000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      script.remove();
+    }
+
+    window[cbName] = res => {
+      cleanup();
+      if (res && res.ok) resolve(res.data);
+      else reject(new Error((res && res.error) || 'حصل خطأ'));
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('فشل الاتصال بالسيرفر، اتأكد من اللينك والنشر'));
+    };
+
+    script.src = API_URL + '?' + qs.toString();
+    document.body.appendChild(script);
+  });
+}
+
+function fmt(n) {
+  return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+
+function showMsg(id, text, ok) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + (ok ? 'ok' : 'err');
+  setTimeout(() => { el.className = 'msg'; }, 5000);
+}
+
+function setBusy(btnId, busy) {
+  document.getElementById(btnId).disabled = busy;
+}
+
+async function loadAll() {
+  try {
+    const data = await call('getBalances');
+    balances = data || {};
+    const sel = document.getElementById('rep');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">-- اختار --</option>';
+    Object.keys(balances).sort().forEach(n => {
+      const o = document.createElement('option');
+      o.value = n;
+      o.textContent = n;
+      sel.appendChild(o);
+    });
+    if (current && balances[current]) sel.value = current;
+    renderAll();
+    onRepChange();
+  } catch (e) {
+    document.getElementById('allBox').innerHTML =
+      '<div class="msg err" style="display:block">خطأ: ' + e.message + '</div>';
+  }
+}
+
+function onRepChange() {
+  const rep = document.getElementById('rep').value;
+  const show = !!rep;
+  document.getElementById('repBox').classList.toggle('hidden', !show);
+  document.getElementById('payCard').classList.toggle('hidden', !show);
+  document.getElementById('collectCard').classList.toggle('hidden', !show);
+  if (!show) return;
+
+  const b = balances[rep] || { collected: 0, paid: 0, balance: 0 };
+  document.getElementById('sCollected').textContent = fmt(b.collected);
+  document.getElementById('sPaid').textContent = fmt(b.paid);
+  const sb = document.getElementById('sBalance');
+  sb.textContent = fmt(b.balance);
+  sb.style.color = b.balance > 0 ? 'var(--bad)' : 'var(--ok)';
+}
+
+function renderAll() {
+  const names = Object.keys(balances).sort();
+  const box = document.getElementById('allBox');
+  if (!names.length) {
+    box.innerHTML = '<div class="loader">لا يوجد بيانات بعد</div>';
+    return;
+  }
+  let html = '<table><tr><th>المندوب</th><th>محصّل</th><th>مدفوع</th><th>المديونية</th></tr>';
+  names.forEach(n => {
+    const b = balances[n];
+    html += '<tr><td>' + n + '</td><td>' + fmt(b.collected) + '</td><td>' + fmt(b.paid) +
+            '</td><td class="' + (b.balance > 0 ? 'pos' : 'zero') + '">' + fmt(b.balance) + '</td></tr>';
+  });
+  html += '</table>';
+  box.innerHTML = html;
+}
+
+async function submitCollection() {
+  const rep = document.getElementById('rep').value;
+  const amount = document.getElementById('cAmount').value;
+  const note = document.getElementById('cNote').value;
+  if (!rep) return showMsg('cMsg', 'اختار المندوب الأول', false);
+
+  setBusy('btnCollect', true);
+  try {
+    await call('recordCollection', { rep, amount, note });
+    document.getElementById('cAmount').value = '';
+    document.getElementById('cNote').value = '';
+    showMsg('cMsg', 'تم تسجيل التحصيل ✔', true);
+    await loadAll();
+  } catch (e) {
+    showMsg('cMsg', e.message, false);
+  } finally {
+    setBusy('btnCollect', false);
+  }
+}
+
+async function submitPayment() {
+  const rep = document.getElementById('rep').value;
+  const cash = document.getElementById('pCash').value;
+  const wallet = document.getElementById('pWallet').value;
+  const note = document.getElementById('pNote').value;
+  if (!rep) return showMsg('pMsg', 'اختار المندوب الأول', false);
+
+  setBusy('btnPay', true);
+  try {
+    await call('recordPayment', { rep, cash, wallet, note });
+    document.getElementById('pCash').value = 0;
+    document.getElementById('pWallet').value = 0;
+    document.getElementById('pNote').value = '';
+    showMsg('pMsg', 'تم تسجيل الدفعة ✔', true);
+    await loadAll();
+  } catch (e) {
+    showMsg('pMsg', e.message, false);
+  } finally {
+    setBusy('btnPay', false);
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>
