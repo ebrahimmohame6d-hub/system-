@@ -3,25 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>حسابات المندوبين</title>
+<title>حسابات الشحنات</title>
 <style>
 :root{--bg:#f4f6fb;--card:#fff;--ink:#1c2233;--muted:#6b7280;--accent:#2563eb;--ok:#16a34a;--bad:#dc2626;--line:#e5e7eb}
 *{box-sizing:border-box}
 body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 header{background:var(--accent);color:#fff;padding:16px;text-align:center;font-size:20px;font-weight:bold}
+nav{display:flex;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{flex:1;margin:0;border-radius:0;background:#fff;color:var(--muted);padding:12px;font-size:15px;border-bottom:3px solid transparent}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:bold}
 main{max-width:900px;margin:16px auto;padding:0 12px;display:grid;gap:16px}
 .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 h2{margin:0 0 12px;font-size:17px}
 label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
-input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;font-family:inherit}
+textarea{min-height:90px;resize:vertical}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{width:100%;margin-top:12px;padding:12px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-size:16px;cursor:pointer}
+button.primary{width:100%;margin-top:12px;padding:12px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-size:16px;cursor:pointer}
 button:disabled{opacity:.5;cursor:not-allowed}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
 .stats div{background:var(--bg);border-radius:8px;padding:10px;font-size:13px;color:var(--muted)}
 .stats b{display:block;font-size:18px;margin-top:4px;color:var(--ink)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
 .pos{color:var(--bad);font-weight:bold}
 .zero{color:var(--ok);font-weight:bold}
 .msg{margin-top:10px;padding:10px;border-radius:8px;display:none;font-size:14px}
@@ -29,51 +33,109 @@ th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right}
 .msg.err{display:block;background:#fee2e2;color:#991b1b}
 .loader{text-align:center;color:var(--muted);padding:20px}
 .hidden{display:none}
+.day{margin:14px 0 6px;font-weight:bold;color:var(--accent);border-bottom:2px solid var(--line);padding-bottom:4px}
+.badge{display:inline-block;background:var(--accent);color:#fff;border-radius:6px;padding:2px 8px;font-weight:bold}
 @media(max-width:600px){.row{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header>حسابات المندوبين</header>
+<header>حسابات الشحنات</header>
+<nav>
+  <button class="active" data-tab="acc" onclick="showTab('acc')">الحسابات</button>
+  <button data-tab="ship" onclick="showTab('ship')">الشحنات</button>
+  <button data-tab="post" onclick="showTab('post')">الشحنات المأجلة</button>
+</nav>
+
 <main>
 
-<div class="card">
-  <label>اختار المندوب</label>
-  <select id="rep" onchange="onRepChange()"><option value="">-- اختار --</option></select>
-  <div id="repBox" class="hidden" style="margin-top:14px">
-    <div class="stats">
-      <div>إجمالي المحصّل<b id="sCollected">0</b></div>
-      <div>إجمالي المدفوع<b id="sPaid">0</b></div>
-      <div>المديونية<b id="sBalance">0</b></div>
+<!-- ===== صفحة الحسابات ===== -->
+<section id="tab-acc">
+  <div class="card">
+    <label>اختار المندوب</label>
+    <select id="rep" onchange="onRepChange()"><option value="">-- اختار --</option></select>
+    <div id="repBox" class="hidden" style="margin-top:14px">
+      <div class="stats">
+        <div>إجمالي المحصّل<b id="sCollected">0</b></div>
+        <div>إجمالي المدفوع<b id="sPaid">0</b></div>
+        <div>المديونية<b id="sBalance">0</b></div>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="card hidden" id="payCard">
-  <h2>تسجيل دفعة من المندوب</h2>
-  <div class="row">
-    <div><label>كاش</label><input type="number" id="pCash" min="0" value="0"></div>
-    <div><label>انستاباي / فودافون كاش</label><input type="number" id="pWallet" min="0" value="0"></div>
+  <div class="card hidden" id="payCard" style="margin-top:16px">
+    <h2>تسجيل دفعة من المندوب</h2>
+    <div class="row">
+      <div><label>كاش</label><input type="number" id="pCash" min="0" value="0"></div>
+      <div><label>انستاباي / فودافون كاش</label><input type="number" id="pWallet" min="0" value="0"></div>
+    </div>
+    <label>ملاحظات</label>
+    <input type="text" id="pNote">
+    <button class="primary" id="btnPay" onclick="submitPayment()">تسجيل الدفعة</button>
+    <div id="pMsg" class="msg"></div>
   </div>
-  <label>ملاحظات</label>
-  <input type="text" id="pNote">
-  <button id="btnPay" onclick="submitPayment()">تسجيل الدفعة</button>
-  <div id="pMsg" class="msg"></div>
-</div>
 
-<div class="card hidden" id="collectCard">
-  <h2>تسجيل تحصيل جديد</h2>
-  <label>المبلغ المحصّل</label>
-  <input type="number" id="cAmount" min="0">
-  <label>ملاحظات</label>
-  <input type="text" id="cNote">
-  <button id="btnCollect" onclick="submitCollection()">تسجيل التحصيل</button>
-  <div id="cMsg" class="msg"></div>
-</div>
+  <div class="card hidden" id="collectCard" style="margin-top:16px">
+    <h2>تسجيل تحصيل جديد</h2>
+    <label>المبلغ المحصّل</label>
+    <input type="number" id="cAmount" min="0">
+    <label>ملاحظات</label>
+    <input type="text" id="cNote">
+    <button class="primary" id="btnCollect" onclick="submitCollection()">تسجيل التحصيل</button>
+    <div id="cMsg" class="msg"></div>
+  </div>
 
-<div class="card">
-  <h2>أرصدة كل المندوبين</h2>
-  <div id="allBox"><div class="loader">جاري التحميل...</div></div>
-</div>
+  <div class="card" style="margin-top:16px">
+    <h2>أرصدة كل المندوبين</h2>
+    <div id="allBox"><div class="loader">جاري التحميل...</div></div>
+  </div>
+</section>
+
+<!-- ===== صفحة الشحنات ===== -->
+<section id="tab-ship" class="hidden">
+  <div class="card">
+    <h2>شحنات تم تسليمها بنجاح</h2>
+    <label>المندوب</label>
+    <select id="dRep"><option value="">-- اختار --</option></select>
+    <label>الوصف / عدد الشحنات</label>
+    <input type="text" id="dDesc">
+    <label>ملاحظات</label>
+    <input type="text" id="dNote">
+    <button class="primary" id="btnDeliv" onclick="submitDelivered()">تسجيل اتسلمت</button>
+    <div id="dMsg" class="msg"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>شحنات تم تأجيلها</h2>
+    <div class="row">
+      <div><label>تاريخ التأجيل</label><input type="date" id="tDate"></div>
+      <div><label>المندوب</label>
+        <select id="tRep"><option value="">-- اختار --</option></select>
+      </div>
+    </div>
+    <label>الشحنات المؤجلة (كل شحنة في سطر منفصل)</label>
+    <textarea id="tDetails" placeholder="مثال:&#10;شحنة عدد 20 كرتونة لمحل فلان&#10;شحنة عدد 5 كراتين لمحل علان"></textarea>
+    <label>ملاحظات</label>
+    <input type="text" id="tNote">
+    <button class="primary" id="btnPost" onclick="submitPostponed()">تسجيل التأجيل</button>
+    <div id="tMsg" class="msg"></div>
+  </div>
+</section>
+
+<!-- ===== صفحة الشحنات المأجلة ===== -->
+<section id="tab-post" class="hidden">
+  <div class="card">
+    <div class="row" style="align-items:end">
+      <div>
+        <label>فلتر بتاريخ معين (سيبه فاضي لكل الأيام)</label>
+        <input type="date" id="fDate" onchange="renderPostponed()">
+      </div>
+      <div><button class="primary" style="margin-top:0" onclick="clearFilter()">عرض الكل</button></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div id="postBox"><div class="loader">جاري التحميل...</div></div>
+  </div>
+</section>
 
 </main>
 
@@ -81,6 +143,7 @@ th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right}
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
 let balances = {};
+let postponedList = [];
 
 // اتصال JSONP بالـ Web app (بيتجاوز مشاكل CORS)
 function call(action, params = {}) {
@@ -120,6 +183,24 @@ function fmt(n) {
   return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function todayISO() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+
+function dmy(iso) {
+  const [y, m, d] = String(iso).split('-');
+  return d + '/' + m + '/' + y;
+}
+
 function showMsg(id, text, ok) {
   const el = document.getElementById(id);
   el.textContent = text;
@@ -131,25 +212,45 @@ function setBusy(btnId, busy) {
   document.getElementById(btnId).disabled = busy;
 }
 
-async function loadAll() {
-  try {
-    const data = await call('getBalances');
-    balances = data || {};
-    const sel = document.getElementById('rep');
+// ---------- التنقل بين الصفحات ----------
+
+function showTab(name) {
+  ['acc', 'ship', 'post'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+  });
+  document.querySelectorAll('nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  if (name === 'post') loadPostponed();
+}
+
+// ---------- الحسابات ----------
+
+function fillRepSelects(names) {
+  ['rep', 'dRep', 'tRep'].forEach(id => {
+    const sel = document.getElementById(id);
     const current = sel.value;
     sel.innerHTML = '<option value="">-- اختار --</option>';
-    Object.keys(balances).sort().forEach(n => {
+    names.forEach(n => {
       const o = document.createElement('option');
       o.value = n;
       o.textContent = n;
       sel.appendChild(o);
     });
-    if (current && balances[current]) sel.value = current;
+    if (current && names.includes(current)) sel.value = current;
+  });
+}
+
+async function loadAll() {
+  try {
+    const data = await call('getBalances');
+    balances = data || {};
+    fillRepSelects(Object.keys(balances).sort());
     renderAll();
     onRepChange();
   } catch (e) {
     document.getElementById('allBox').innerHTML =
-      '<div class="msg err" style="display:block">خطأ: ' + e.message + '</div>';
+      '<div class="msg err" style="display:block">خطأ: ' + esc(e.message) + '</div>';
   }
 }
 
@@ -179,7 +280,7 @@ function renderAll() {
   let html = '<table><tr><th>المندوب</th><th>محصّل</th><th>مدفوع</th><th>المديونية</th></tr>';
   names.forEach(n => {
     const b = balances[n];
-    html += '<tr><td>' + n + '</td><td>' + fmt(b.collected) + '</td><td>' + fmt(b.paid) +
+    html += '<tr><td>' + esc(n) + '</td><td>' + fmt(b.collected) + '</td><td>' + fmt(b.paid) +
             '</td><td class="' + (b.balance > 0 ? 'pos' : 'zero') + '">' + fmt(b.balance) + '</td></tr>';
   });
   html += '</table>';
@@ -226,6 +327,97 @@ async function submitPayment() {
   } finally {
     setBusy('btnPay', false);
   }
+}
+
+// ---------- الشحنات ----------
+
+async function submitDelivered() {
+  const rep = document.getElementById('dRep').value;
+  const desc = document.getElementById('dDesc').value;
+  const note = document.getElementById('dNote').value;
+  if (!rep) return showMsg('dMsg', 'اختار المندوب الأول', false);
+  if (!desc.trim()) return showMsg('dMsg', 'اكتب وصف الشحنة أو عددها', false);
+
+  setBusy('btnDeliv', true);
+  try {
+    await call('recordDelivered', { rep, desc, note });
+    document.getElementById('dDesc').value = '';
+    document.getElementById('dNote').value = '';
+    showMsg('dMsg', 'تم تسجيل الشحنة كـ اتسلمت ✔', true);
+  } catch (e) {
+    showMsg('dMsg', e.message, false);
+  } finally {
+    setBusy('btnDeliv', false);
+  }
+}
+
+async function submitPostponed() {
+  const date = document.getElementById('tDate').value;
+  const rep = document.getElementById('tRep').value;
+  const details = document.getElementById('tDetails').value;
+  const note = document.getElementById('tNote').value;
+  if (!date) return showMsg('tMsg', 'اختار تاريخ التأجيل', false);
+  if (!rep) return showMsg('tMsg', 'اختار المندوب الأول', false);
+  if (!details.trim()) return showMsg('tMsg', 'اكتب الشحنة المؤجلة، وكل شحنة في سطر', false);
+
+  setBusy('btnPost', true);
+  try {
+    const count = await call('recordPostponed', { date, rep, details, note });
+    document.getElementById('tDetails').value = '';
+    document.getElementById('tNote').value = '';
+    showMsg('tMsg', 'تم تسجيل ' + count + ' شحنة مؤجلة بتاريخ ' + dmy(date) + ' ✔', true);
+  } catch (e) {
+    showMsg('tMsg', e.message, false);
+  } finally {
+    setBusy('btnPost', false);
+  }
+}
+
+// ---------- الشحنات المأجلة ----------
+
+async function loadPostponed() {
+  document.getElementById('postBox').innerHTML = '<div class="loader">جاري التحميل...</div>';
+  try {
+    postponedList = (await call('getPostponed')) || [];
+    renderPostponed();
+  } catch (e) {
+    document.getElementById('postBox').innerHTML =
+      '<div class="msg err" style="display:block">خطأ: ' + esc(e.message) + '</div>';
+  }
+}
+
+function clearFilter() {
+  document.getElementById('fDate').value = '';
+  renderPostponed();
+}
+
+function renderPostponed() {
+  const filter = document.getElementById('fDate').value;
+  const box = document.getElementById('postBox');
+  const list = filter ? postponedList.filter(x => x.date === filter) : postponedList;
+
+  if (!list.length) {
+    box.innerHTML = '<div class="loader">لا توجد شحنات مؤجلة' + (filter ? ' في هذا اليوم' : '') + '</div>';
+    return;
+  }
+
+  let html = '';
+  let lastDate = null;
+  let table = '';
+
+  list.forEach(x => {
+    if (x.date !== lastDate) {
+      if (table) html += table + '</table>';
+      html += '<div class="day">تاريخ التأجيل: ' + dmy(x.date) + '</div>';
+      table = '<table><tr><th>رقم</th><th>المندوب</th><th>الشحنة</th><th>ملاحظات</th></tr>';
+      lastDate = x.date;
+    }
+    table += '<tr><td><span class="badge">' + x.no + '</span></td><td>' + esc(x.rep) +
+             '</td><td>' + esc(x.details) + '</td><td>' + esc(x.note) + '</td></tr>';
+  });
+  if (table) html += table + '</table>';
+
+  box.innerHTML = html;
 }
 
 loadAll();
