@@ -28,6 +28,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
 td input,td select{margin:0}
+.tscroll{overflow-x:auto}
+.dt{direction:ltr;unicode-bidi:plaintext;text-align:right;white-space:nowrap;font-size:13px}
 .pos{color:var(--bad);font-weight:bold}
 .zero{color:var(--ok);font-weight:bold}
 .msg{margin-top:10px;padding:10px;border-radius:8px;display:none;font-size:14px}
@@ -255,9 +257,18 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
+// تاريخ فقط: yyyy-MM-dd -> dd/MM/yyyy
 function dmy(iso) {
-  const [y, m, d] = String(iso).split('-');
-  return d + '/' + m + '/' + y;
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return esc(iso);
+  return m[3] + '/' + m[2] + '/' + m[1];
+}
+
+// تاريخ ووقت: yyyy-MM-dd HH:mm -> dd/MM/yyyy HH:mm
+function dmyt(v) {
+  const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  if (!m) return v ? esc(v) : '-';
+  return m[3] + '/' + m[2] + '/' + m[1] + (m[4] ? ' ' + m[4] + ':' + m[5] : '');
 }
 
 function todayISO() {
@@ -530,17 +541,19 @@ async function loadAllShips() {
       return;
     }
 
-    let html = '<table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th><th>تاريخ التأجيل</th><th>آخر تحديث</th></tr>';
+    let html = '<div class="tscroll"><table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th>' +
+      '<th>تاريخ الإضافة</th><th>تاريخ التأجيل</th><th>آخر تحديث</th></tr>';
     rows.forEach(x => {
       html += '<tr>' +
         '<td class="awb">' + esc(x.awb) + '</td>' +
         '<td>' + esc(x.rep) + '</td>' +
         '<td>' + stBadge(x.status) + '</td>' +
-        '<td>' + (x.postDate ? dmy(x.postDate) : '-') + '</td>' +
-        '<td>' + (x.updated ? dmy(x.updated) : '-') + '</td>' +
+        '<td class="dt">' + dmyt(x.added) + '</td>' +
+        '<td class="dt">' + (x.postDate ? dmy(x.postDate) : '-') + '</td>' +
+        '<td class="dt">' + dmyt(x.updated) + '</td>' +
         '</tr>';
     });
-    box.innerHTML = html + '</table>';
+    box.innerHTML = html + '</table></div>';
   } catch (e) {
     box.innerHTML = '<div class="msg err" style="display:block">خطأ: ' + esc(e.message) + '</div>';
   }
