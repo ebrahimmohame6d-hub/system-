@@ -146,6 +146,9 @@ tr.tot td{background:var(--surface2);font-weight:800;border-bottom:0}
 .st-ok{background:rgba(16,185,129,.15);color:#10b981}
 .st-post{background:rgba(245,158,11,.18);color:#d97706}
 .st-esc{background:rgba(239,68,68,.15);color:#ef4444}
+.st-cancel{background:rgba(100,116,139,.18);color:#475569}
+.st-replace{background:rgba(124,58,237,.15);color:#7c3aed}
+.st-received{background:rgba(2,132,199,.15);color:#0284c7}
 select.stSel[data-v="ناجح"]{border-color:var(--ok);background:rgba(16,185,129,.12)}
 select.stSel[data-v="مؤجل"]{border-color:var(--warn);background:rgba(245,158,11,.14)}
 select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68,68,.12)}
@@ -378,6 +381,9 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
           <option value="ناجح">ناجح</option>
           <option value="مؤجل">مؤجل</option>
           <option value="متهرب">متهرب</option>
+          <option value="إلغاء">إلغاء</option>
+          <option value="استبدال">استبدال</option>
+          <option value="استلام طرد">استلام طرد</option>
         </select>
       </div>
     </div>
@@ -427,7 +433,10 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-const STC = { 'قيد التوصيل': 'pend', 'ناجح': 'ok', 'مؤجل': 'post', 'متهرب': 'esc' };
+const STC = {
+  'قيد التوصيل': 'pend', 'ناجح': 'ok', 'مؤجل': 'post', 'متهرب': 'esc',
+  'إلغاء': 'cancel', 'استبدال': 'replace', 'استلام طرد': 'received'
+};
 const LOADING = '<div class="loader"><span class="spin"></span>جاري التحميل...</div>';
 const TRASH = '<svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg>';
 
@@ -723,7 +732,7 @@ async function submitAdd() {
 
     let html = '';
     if (r.reopenedList && r.reopenedList.length) {
-      html += '<div class="sub">شحنات رجعت لقيد التوصيل من المؤجل/المتهرب:</div>' +
+      html += '<div class="sub">شحنات رجعت لقيد التوصيل من حالتها السابقة:</div>' +
         tbl(['رقم البوليصة', 'المندوب', 'الحالة السابقة'],
           r.reopenedList.map(x => ['<span class="awb">' + esc(x.awb) + '</span>', esc(x.rep), stBadge(x.status)]));
     }
@@ -757,6 +766,9 @@ async function loadPending() {
         '<option value="ناجح">ناجح</option>' +
         '<option value="مؤجل">مؤجل</option>' +
         '<option value="متهرب">متهرب</option>' +
+        '<option value="إلغاء">إلغاء</option>' +
+        '<option value="استبدال">استبدال</option>' +
+        '<option value="استلام طرد">استلام طرد</option>' +
       '</select>',
       '<input type="date" class="dtInp" data-i="' + i + '" style="display:none">'
     ]);
@@ -912,6 +924,9 @@ async function loadSummary() {
       '<div class="stat s-amber">مؤجل<b data-count="' + r.postponed + '">0</b></div>' +
       '<div class="stat s-red">متهرب<b data-count="' + r.escaped + '">0</b></div>' +
       '<div class="stat s-sky">قيد التوصيل حالياً<b data-count="' + r.pending + '">0</b></div>' +
+      '<div class="stat s-red">إلغاء<b data-count="' + r.cancelled + '">0</b></div>' +
+      '<div class="stat s-blue">استبدال<b data-count="' + r.replaced + '">0</b></div>' +
+      '<div class="stat s-green">استلام طرد<b data-count="' + r.received + '">0</b></div>' +
       '</div>';
     html += '<div class="day">الشحنات المؤجلة</div>';
     html += r.postList.length
