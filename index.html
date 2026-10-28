@@ -38,6 +38,12 @@ td input,td select{margin:0}
 .day{margin:14px 0 6px;font-weight:bold;color:var(--accent);border-bottom:2px solid var(--line);padding-bottom:4px}
 .badge{display:inline-block;background:var(--accent);color:#fff;border-radius:6px;padding:2px 8px;font-weight:bold}
 .awb{direction:ltr;font-family:monospace;font-size:14px}
+.st{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:bold;font-size:13px}
+.st-pend{background:#e0e7ff;color:#3730a3}
+.st-ok{background:#dcfce7;color:#166534}
+.st-post{background:#fef3c7;color:#92400e}
+.st-esc{background:#fee2e2;color:#991b1b}
+.sub{margin-top:14px;font-weight:bold;color:var(--muted);font-size:14px}
 @media(max-width:600px){
   .row{grid-template-columns:1fr}
   nav{width:110px}
@@ -53,6 +59,7 @@ td input,td select{margin:0}
   <button class="active" data-tab="acc" onclick="showTab('acc')">الحسابات</button>
   <button data-tab="add" onclick="showTab('add')">إضافة شحنات</button>
   <button data-tab="pend" onclick="showTab('pend')">قيد التوصيل</button>
+  <button data-tab="all" onclick="showTab('all')">كل الشحنات</button>
   <button data-tab="post" onclick="showTab('post')">الشحنات المأجلة</button>
   <button data-tab="rep" onclick="showTab('rep')">ملخص المندوب</button>
 </nav>
@@ -76,14 +83,14 @@ td input,td select{margin:0}
   <div class="card hidden" id="payCard" style="margin-top:16px">
     <h2>تسجيل دفعة من المندوب</h2>
     <div class="row">
-      <div><label>كاش</label><input type="number" id="pCash" min="0" value="0"></div>
+      <div><label>كاش</label><input type="number" id="pCash" min="0" placeholder="0"></div>
       <div><label>انستاباي / فودافون كاش</label>
         <select id="pWalletType">
           <option value="">-- اختار --</option>
           <option value="انستاباي">انستاباي</option>
           <option value="فودافون كاش">فودافون كاش</option>
         </select>
-        <input type="number" id="pWallet" min="0" value="0" style="margin-top:8px" placeholder="المبلغ">
+        <input type="number" id="pWallet" min="0" style="margin-top:8px" placeholder="المبلغ">
       </div>
     </div>
     <label>ملاحظات</label>
@@ -118,6 +125,7 @@ td input,td select{margin:0}
     <textarea id="aAwb"></textarea>
     <button class="primary" id="btnAdd" onclick="submitAdd()">إضافة لقيد التوصيل</button>
     <div id="aMsg" class="msg"></div>
+    <div id="aSkipBox"></div>
   </div>
 </section>
 
@@ -132,6 +140,30 @@ td input,td select{margin:0}
     <div id="pendBox"><div class="loader">اختار مندوب</div></div>
     <button class="primary" id="btnSave" onclick="saveUpdates()">حفظ التحديثات</button>
     <div id="uMsg" class="msg"></div>
+  </div>
+</section>
+
+<!-- ===== كل الشحنات ===== -->
+<section id="tab-all" class="hidden">
+  <div class="card">
+    <div class="row">
+      <div><label>المندوب</label>
+        <select id="lRep" onchange="loadAllShips()"><option value="">كل المندوبين</option></select>
+      </div>
+      <div><label>الحالة</label>
+        <select id="lStatus" onchange="loadAllShips()">
+          <option value="">كل الحالات</option>
+          <option value="قيد التوصيل">قيد التوصيل</option>
+          <option value="ناجح">ناجح</option>
+          <option value="مؤجل">مؤجل</option>
+          <option value="متهرب">متهرب</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>كل الشحنات <span id="lCount"></span></h2>
+    <div id="allShipBox"><div class="loader">جاري التحميل...</div></div>
   </div>
 </section>
 
@@ -172,6 +204,8 @@ td input,td select{margin:0}
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
+
+const STC = { 'قيد التوصيل': 'pend', 'ناجح': 'ok', 'مؤجل': 'post', 'متهرب': 'esc' };
 
 let balances = {};
 let pendingRows = [];
@@ -233,6 +267,10 @@ function todayISO() {
   return d.getFullYear() + '-' + m + '-' + day;
 }
 
+function stBadge(status) {
+  return '<span class="st st-' + (STC[status] || 'pend') + '">' + esc(status) + '</span>';
+}
+
 function showMsg(id, text, ok) {
   const el = document.getElementById(id);
   el.textContent = text;
@@ -247,23 +285,25 @@ function setBusy(btnId, busy) {
 // ---------- التنقل ----------
 
 function showTab(name) {
-  ['acc', 'add', 'pend', 'post', 'rep'].forEach(t => {
+  ['acc', 'add', 'pend', 'all', 'post', 'rep'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
   });
   document.querySelectorAll('nav button').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === name);
   });
   if (name === 'pend') loadPending();
+  if (name === 'all') loadAllShips();
   if (name === 'post') loadPostponed();
 }
 
 // ---------- الحسابات ----------
 
 function fillRepSelects(names) {
-  ['rep', 'aRep', 'pRep', 'sRep'].forEach(id => {
+  ['rep', 'aRep', 'pRep', 'sRep', 'lRep'].forEach(id => {
     const sel = document.getElementById(id);
     const current = sel.value;
-    sel.innerHTML = '<option value="">-- اختار --</option>';
+    const first = sel.options[0].outerHTML;
+    sel.innerHTML = first;
     names.forEach(n => {
       const o = document.createElement('option');
       o.value = n;
@@ -352,9 +392,9 @@ async function submitPayment() {
   setBusy('btnPay', true);
   try {
     const finalNote = [walletType ? '(' + walletType + ')' : '', note].filter(Boolean).join(' ');
-    await call('recordPayment', { rep, cash, wallet, note: finalNote });
-    document.getElementById('pCash').value = 0;
-    document.getElementById('pWallet').value = 0;
+    await call('recordPayment', { rep, cash: cash || 0, wallet: wallet || 0, note: finalNote });
+    document.getElementById('pCash').value = '';
+    document.getElementById('pWallet').value = '';
     document.getElementById('pWalletType').value = '';
     document.getElementById('pNote').value = '';
     showMsg('pMsg', 'تم تسجيل الدفعة ✔', true);
@@ -371,6 +411,8 @@ async function submitPayment() {
 async function submitAdd() {
   const rep = document.getElementById('aRep').value;
   const awbs = document.getElementById('aAwb').value;
+  const skipBox = document.getElementById('aSkipBox');
+  skipBox.innerHTML = '';
   if (!rep) return showMsg('aMsg', 'اختار المندوب الأول', false);
   if (!awbs.trim()) return showMsg('aMsg', 'الصق أرقام البوليصة الأول', false);
 
@@ -378,9 +420,18 @@ async function submitAdd() {
   try {
     const r = await call('addShipments', { rep, awbs });
     document.getElementById('aAwb').value = '';
-    let text = 'تمت إضافة ' + r.added + ' شحنة لقيد التوصيل ✔';
-    if (r.skipped) text += ' (اتجاهل ' + r.skipped + ' رقم مكرر)';
-    showMsg('aMsg', text, true);
+    showMsg('aMsg', 'تمت إضافة ' + r.added + ' شحنة لقيد التوصيل ✔' +
+      (r.skipped ? ' — و' + r.skipped + ' رقم كان موجود قبل كده (التفاصيل تحت)' : ''), true);
+
+    if (r.skippedList && r.skippedList.length) {
+      let html = '<div class="sub">الشحنات الموجودة قبل كده وحالتها الحالية:</div>' +
+        '<table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th></tr>';
+      r.skippedList.forEach(x => {
+        html += '<tr><td class="awb">' + esc(x.awb) + '</td><td>' + esc(x.rep) +
+                '</td><td>' + stBadge(x.status) + '</td></tr>';
+      });
+      skipBox.innerHTML = html + '</table>';
+    }
   } catch (e) {
     showMsg('aMsg', e.message, false);
   } finally {
@@ -461,6 +512,37 @@ async function saveUpdates() {
     showMsg('uMsg', e.message, false);
   } finally {
     setBusy('btnSave', false);
+  }
+}
+
+// ---------- كل الشحنات ----------
+
+async function loadAllShips() {
+  const rep = document.getElementById('lRep').value;
+  const status = document.getElementById('lStatus').value;
+  const box = document.getElementById('allShipBox');
+  box.innerHTML = '<div class="loader">جاري التحميل...</div>';
+  try {
+    const rows = (await call('getAllShipments', { rep, status })) || [];
+    document.getElementById('lCount').textContent = '(' + rows.length + ')';
+    if (!rows.length) {
+      box.innerHTML = '<div class="loader">مفيش شحنات بالفلتر ده</div>';
+      return;
+    }
+
+    let html = '<table><tr><th>رقم البوليصة</th><th>المندوب</th><th>الحالة</th><th>تاريخ التأجيل</th><th>آخر تحديث</th></tr>';
+    rows.forEach(x => {
+      html += '<tr>' +
+        '<td class="awb">' + esc(x.awb) + '</td>' +
+        '<td>' + esc(x.rep) + '</td>' +
+        '<td>' + stBadge(x.status) + '</td>' +
+        '<td>' + (x.postDate ? dmy(x.postDate) : '-') + '</td>' +
+        '<td>' + (x.updated ? dmy(x.updated) : '-') + '</td>' +
+        '</tr>';
+    });
+    box.innerHTML = html + '</table>';
+  } catch (e) {
+    box.innerHTML = '<div class="msg err" style="display:block">خطأ: ' + esc(e.message) + '</div>';
   }
 }
 
