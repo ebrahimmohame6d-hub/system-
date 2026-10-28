@@ -100,6 +100,9 @@ button.primary{
 }
 button.primary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(79,70,229,.45);filter:brightness(1.06)}
 button.primary:active{transform:translateY(0) scale(.98)}
+button.danger{width:100%;margin-top:14px;padding:13px;border:0;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#dc2626,#f97316);box-shadow:0 8px 20px rgba(220,38,38,.35);transition:transform .2s,box-shadow .2s,filter .2s}
+button.danger:hover{transform:translateY(-2px);filter:brightness(1.06)}
+button.danger:active{transform:translateY(0) scale(.98)}
 button:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
 button.busy::after{content:"";display:inline-block;width:16px;height:16px;margin-right:10px;vertical-align:-3px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 .rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.4);transform:scale(0);animation:rip .6s linear;pointer-events:none}
@@ -383,6 +386,9 @@ select.stSel[data-v="متهرب"]{border-color:var(--bad);background:rgba(239,68
     <h2>كل الشحنات <span id="lCount"></span></h2>
     <div id="allShipBox"><div class="loader"><span class="spin"></span>جاري التحميل...</div></div>
   </div>
+  <div class="card" style="margin-top:16px">
+    <button class="danger" id="btnDelAll" onclick="deleteAllShips()">حذف كل الشحنات المعروضة</button>
+  </div>
 </section>
 
 <section id="tab-post" class="hidden">
@@ -428,6 +434,7 @@ const TRASH = '<svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6
 let balances = {};
 let pendingRows = [];
 let postList = [];
+let shipCount = 0;
 
 function call(action, params = {}) {
   return new Promise((resolve, reject) => {
@@ -796,6 +803,7 @@ async function loadAllShips() {
   try {
     const rows = (await call('getAllShipments', { rep, status })) || [];
     document.getElementById('lCount').textContent = '(' + rows.length + ')';
+    shipCount = rows.length;
     if (!rows.length) { box.innerHTML = '<div class="loader">مفيش شحنات بالفلتر ده</div>'; return; }
     const data = rows.map(x => [
       '<span class="awb">' + esc(x.awb) + '</span>',
@@ -823,6 +831,27 @@ async function deleteShipment(btn) {
   } catch (e) {
     btn.disabled = false;
     showMsg('', e.message, false);
+  }
+}
+
+async function deleteAllShips() {
+  const rep = document.getElementById('lRep').value;
+  const status = document.getElementById('lStatus').value;
+  if (!shipCount) return showMsg('', 'مفيش شحنات لحذفها', false);
+
+  const scope = [rep || 'كل المندوبين', status || 'كل الحالات'].join(' - ');
+  if (!confirm('هتحذف ' + shipCount + ' شحنة (' + scope + ').\nمش هينفع تتراجع. متأكد؟')) return;
+
+  setBusy('btnDelAll', true);
+  try {
+    const n = await call('deleteAllShipments', { rep, status });
+    showMsg('', 'تم حذف ' + n + ' شحنة', true);
+    await loadAllShips();
+    loadAll();
+  } catch (e) {
+    showMsg('', e.message, false);
+  } finally {
+    setBusy('btnDelAll', false);
   }
 }
 
