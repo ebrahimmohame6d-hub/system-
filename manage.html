@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>إدارة المناديب</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#5b6485; --line:#e3e7f3;
+  --p1:#4f46e5; --p2:#7c3aed; --bad:#ef4444;
+  --shadow:0 4px 18px rgba(79,70,229,.08);
+}
+[data-theme="dark"]{
+  --bg:#0d1125; --surface:#161b37; --surface2:#1d2346; --ink:#f1f3ff; --muted:#b4bde3; --line:#2a3160;
+  --shadow:0 4px 18px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Cairo',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:40px;transition:background .3s,color .3s}
+header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px;color:#fff;
+  background:linear-gradient(120deg,#4f46e5,#7c3aed,#0ea5e9);background-size:300% 300%;
+  box-shadow:0 6px 24px rgba(79,70,229,.3);animation:shimmer 10s ease infinite;
+}
+header h1{margin:0;font-size:20px;font-weight:800;animation:fadeUp .5s both}
+.hbtns{display:flex;gap:8px}
+.hbtn{
+  height:40px;padding:0 14px;border-radius:12px;border:0;cursor:pointer;background:rgba(255,255,255,.2);
+  color:#fff;font-family:inherit;font-size:14px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;
+  transition:transform .2s,background .2s,box-shadow .2s;
+}
+.hbtn:hover{transform:translateY(-2px);background:rgba(255,255,255,.32)}
+.hbtn:active{transform:scale(.96)}
+.hbtn-hl{
+  background:linear-gradient(135deg,#fbbf24,#f97316);font-weight:800;padding:0 18px;gap:6px;font-size:15px;
+  animation:glow 2s ease-in-out infinite,floatY 3s ease-in-out infinite;
+}
+.hbtn-hl:hover{background:linear-gradient(135deg,#fcd34d,#fb923c);transform:translateY(-3px) scale(1.05)}
+.hbtn-hl .ico{display:inline-block}
+.hbtn-hl .ico svg{animation:personBob 2.4s ease-in-out infinite}
+.hbtn-hl:hover .ico svg{animation:personWave .6s ease}
+main{max-width:760px;margin:20px auto;padding:0 14px}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+  margin-bottom:16px;padding:18px;animation:fadeUp .45s both;transition:transform .25s,box-shadow .25s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(79,70,229,.14)}
+.card:nth-child(1){animation-delay:.05s}
+.card:nth-child(2){animation-delay:.15s}
+.card:nth-child(3){animation-delay:.25s}
+h2{margin:0 0 12px;font-size:17px;font-weight:800;color:var(--ink)}
+label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
+input,select{
+  width:100%;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;
+  transition:border-color .25s,background .25s,box-shadow .25s,transform .2s;
+}
+input:focus,select:focus{border-color:var(--p1);background:var(--surface);transform:translateY(-1px);box-shadow:0 0 0 4px rgba(79,70,229,.15)}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.formrow{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:end}
+.btn{
+  padding:12px 18px;border:0;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;
+  color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));white-space:nowrap;
+  transition:transform .2s,box-shadow .2s,filter .2s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(79,70,229,.35);filter:brightness(1.06)}
+.btn:active{transform:scale(.97)}
+.btn.danger{background:linear-gradient(135deg,#dc2626,#f97316)}
+.btn.danger:hover{box-shadow:0 10px 22px rgba(220,38,38,.35)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.full{width:100%;margin-top:12px}
+.list{list-style:none;margin:0;padding:0}
+.list li{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 4px;border-bottom:1px solid var(--line);font-weight:700;
+  animation:slideIn .4s both;transition:background .2s,padding .2s;
+}
+.list li:hover{background:rgba(79,70,229,.06);padding-right:10px}
+.list li:last-child{border-bottom:0}
+.list li:nth-child(1){animation-delay:.05s}
+.list li:nth-child(2){animation-delay:.1s}
+.list li:nth-child(3){animation-delay:.15s}
+.list li:nth-child(4){animation-delay:.2s}
+.list li:nth-child(5){animation-delay:.25s}
+.list li:nth-child(6){animation-delay:.3s}
+.list li:nth-child(7){animation-delay:.35s}
+.list li:nth-child(8){animation-delay:.4s}
+.list li:nth-child(9){animation-delay:.45s}
+.list li:nth-child(10){animation-delay:.5s}
+.rate{
+  font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));
+  padding:5px 12px;border-radius:999px;white-space:nowrap;transition:transform .2s;
+}
+.rate:hover{transform:scale(1.06)}
+.muted{color:var(--muted);font-size:14px;font-weight:700}
+#toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 14px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(0,0,0,.25);animation:toastIn .4s cubic-bezier(.2,.9,.3,1.2)}
+.toast.ok{background:linear-gradient(135deg,#059669,#10b981)}
+.toast.err{background:linear-gradient(135deg,#dc2626,#f97316)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes slideIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.35),0 6px 18px rgba(249,115,22,.45)}50%{box-shadow:0 0 0 6px rgba(255,255,255,.15),0 10px 30px rgba(249,115,22,.85)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes personBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px) scale(1.06)}}
+@keyframes personWave{0%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}100%{transform:rotate(0)}}
+
+@media(max-width:560px){
+  .formrow{grid-template-columns:1fr}
+  .formrow .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>إدارة المناديب</h1>
+  <div class="hbtns">
+    <a class="hbtn hbtn-hl" href="index.html"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span> الحسابات</a>
+    <button class="hbtn" onclick="toggleTheme()" title="تبديل الوضع">🌓</button>
+  </div>
+</header>
+
+<div id="toasts"></div>
+
+<main>
+  <div class="card">
+    <h2>المناديب الحاليين</h2>
+    <ul class="list" id="repList"><li class="muted">جاري التحميل...</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>إضافة مندوب جديد</h2>
+    <div class="formrow">
+      <div>
+        <label>اسم المندوب</label>
+        <input type="text" id="newName" placeholder="اكتب الاسم">
+      </div>
+      <div>
+        <label>العمولة</label>
+        <input type="number" id="newRate" value="27" min="1">
+      </div>
+    </div>
+    <button class="btn full" id="btnAdd" onclick="addRep()">➕ إضافة المندوب</button>
+  </div>
+
+  <div class="card">
+    <h2>حذف مندوب</h2>
+    <div class="formrow">
+      <div>
+        <label>اختار المندوب</label>
+        <select id="delSelect"></select>
+      </div>
+      <button class="btn danger" id="btnDel" onclick="deleteRep()">🗑️ حذف</button>
+    </div>
+  </div>
+</main>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
+
+let reps = [];
+
+function call(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const qs = new URLSearchParams({ ...params, action, callback: cbName });
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('انتهت مهلة الاتصال، جرب تاني')); }, 20000);
+    function cleanup() { clearTimeout(timer); delete window[cbName]; script.remove(); }
+    window[cbName] = res => {
+      cleanup();
+      if (res && res.ok) resolve(res.data);
+      else reject(new Error((res && res.error) || 'حصل خطأ'));
+    };
+    script.onerror = () => { cleanup(); reject(new Error('فشل الاتصال بالسيرفر، اتأكد من اللينك والنشر')); };
+    script.src = API_URL + '?' + qs.toString();
+    document.body.appendChild(script);
+  });
+}
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function toast(text, ok) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.textContent = text;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+}
+
+function render() {
+  const list = document.getElementById('repList');
+  const sel = document.getElementById('delSelect');
+
+  if (!reps.length) {
+    list.innerHTML = '<li class="muted">مفيش مناديب</li>';
+    sel.innerHTML = '<option value="">-- مفيش مناديب --</option>';
+    return;
+  }
+
+  list.innerHTML = reps.map(r =>
+    '<li><span>' + esc(r.name) + '</span><span class="rate">العمولة: ' + r.rate + '</span></li>'
+  ).join('');
+
+  sel.innerHTML = '<option value="">-- اختار المندوب --</option>' +
+    reps.map(r => '<option value="' + esc(r.name) + '">' + esc(r.name) + '</option>').join('');
+}
+
+async function loadReps() {
+  try {
+    reps = (await call('getReps')) || [];
+    render();
+  } catch (e) {
+    toast('تعذر تحميل المناديب: ' + e.message, false);
+  }
+}
+
+async function addRep() {
+  const nameEl = document.getElementById('newName');
+  const rateEl = document.getElementById('newRate');
+  const name = nameEl.value.trim();
+  const rate = Number(rateEl.value);
+  if (!name) return toast('اكتب اسم المندوب', false);
+  if (!(rate > 0)) return toast('اكتب العمولة', false);
+
+  const btn = document.getElementById('btnAdd');
+  btn.disabled = true;
+  try {
+    await call('addRep', { name: name, rate: rate });
+    nameEl.value = '';
+    rateEl.value = '27';
+    toast('تم إضافة ' + name, true);
+    await loadReps();
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteRep() {
+  const name = document.getElementById('delSelect').value;
+  if (!name) return toast('اختار المندوب الأول', false);
+  if (!confirm('متأكد إنك عايز تحذف ' + name + '؟\nهيتشال من القايمة، والأيام القديمة هتفضل زي ما هي.')) return;
+
+  const btn = document.getElementById('btnDel');
+  btn.disabled = true;
+  try {
+    await call('deleteRep', { name: name });
+    toast('تم حذف ' + name, true);
+    await loadReps();
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+}
+
+(function init() {
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  loadReps();
+})();
+</script>
+</body>
+</html>
