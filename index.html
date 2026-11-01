@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>حسابات المناديب</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Reem+Kufi:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#5b6485; --line:#e3e7f3;
@@ -22,7 +22,7 @@ header{
   background:linear-gradient(120deg,#4f46e5,#7c3aed,#0ea5e9);background-size:300% 300%;
   box-shadow:0 6px 24px rgba(79,70,229,.3);animation:shimmer 10s ease infinite;
 }
-header h1{margin:0;font-size:20px;font-weight:800;animation:fadeUp .5s both}
+header h1{margin:0;font-family:'Reem Kufi',Cairo,sans-serif;font-size:21px;font-weight:700;animation:fadeUp .5s both}
 .hbtns{display:flex;gap:8px}
 .hbtn{
   height:40px;padding:0 14px;border-radius:12px;border:0;cursor:pointer;background:rgba(255,255,255,.2);
@@ -41,8 +41,8 @@ header h1{margin:0;font-size:20px;font-weight:800;animation:fadeUp .5s both}
 .hbtn-hl:hover .ico svg{animation:personWave .6s ease}
 main{max-width:760px;margin:20px auto;padding:0 14px}
 .card{
-  background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
-  margin-bottom:12px;overflow:hidden;animation:fadeUp .45s both;transition:transform .25s,box-shadow .25s;
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+  margin-bottom:12px;animation:fadeUp .45s both;transition:transform .25s,box-shadow .25s;
 }
 .card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(79,70,229,.14)}
 #list .card:nth-child(1){animation-delay:.05s}
@@ -70,12 +70,50 @@ input,select{
   border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;
   transition:border-color .25s,background .25s,box-shadow .25s,transform .2s;
 }
-input:focus,select:focus{border-color:var(--p1);background:var(--surface);transform:translateY(-1px);box-shadow:0 0 0 4px rgba(79,70,229,.15)}
+input:focus{border-color:var(--p1);background:var(--surface);transform:translateY(-1px);box-shadow:0 0 0 4px rgba(79,70,229,.15)}
 input[readonly]{opacity:.85;cursor:default}
+input[type=date]{font-family:inherit;color-scheme:light}
+[data-theme="dark"] input[type=date]{color-scheme:dark}
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
-#dLabel{font-weight:800;color:var(--p1);font-size:15px;animation:fadeUp .4s both}
+
+/* ===== القايمة المنسدلة المخصوصة ===== */
+.dd{position:relative;width:100%}
+.dd-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:11px 14px;font-family:inherit;font-size:15px;font-weight:700;color:var(--ink);text-align:right;
+  background:var(--surface2);border:1.5px solid var(--line);border-radius:14px;cursor:pointer;
+  transition:border-color .25s,box-shadow .25s,background .25s,transform .2s;
+}
+.dd-btn:hover{border-color:#a5b4fc;box-shadow:0 6px 16px rgba(79,70,229,.12);transform:translateY(-1px)}
+.dd.open .dd-btn{border-color:var(--p1);background:var(--surface);box-shadow:0 0 0 4px rgba(79,70,229,.15)}
+.dd.empty .dd-label{color:var(--muted);font-weight:600}
+.dd-chev{
+  width:26px;height:26px;flex-shrink:0;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:13px;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.2);
+}
+.dd.open .dd-chev{transform:rotate(180deg)}
+.dd-menu{
+  position:absolute;top:calc(100% + 6px);right:0;left:0;z-index:50;max-height:280px;overflow-y:auto;
+  padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 18px 40px rgba(31,27,75,.22);
+  opacity:0;transform:translateY(-8px) scale(.97);transform-origin:top center;pointer-events:none;
+  transition:opacity .2s ease,transform .25s cubic-bezier(.2,.9,.3,1.2);
+}
+.dd.open .dd-menu{opacity:1;transform:none;pointer-events:auto}
+.dd-item{
+  padding:10px 12px;border-radius:10px;font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;
+  transition:background .2s,padding .2s,color .2s;
+}
+.dd-item:hover{background:linear-gradient(90deg,rgba(79,70,229,.14),rgba(124,58,237,.05));padding-right:18px}
+.dd-item.sel{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+.dd-item.placeholder{color:var(--muted);font-weight:600}
+.dd.open .dd-item{animation:ddIn .35s both;animation-delay:calc(var(--k) * 35ms)}
+@keyframes ddIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+
+#dLabel{font-family:'Reem Kufi',Cairo,sans-serif;font-weight:700;color:var(--p1);font-size:16px;animation:fadeUp .4s both}
 #dStatus{font-size:13px;color:var(--muted);font-weight:700}
 .head{display:flex;align-items:center;gap:8px;padding-left:12px}
 .rep-head{
@@ -84,28 +122,30 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
   transition:background .2s,padding .2s;
 }
 .rep-head:hover{background:rgba(79,70,229,.06);padding-right:22px}
+.rep-name{font-family:'Reem Kufi',Cairo,sans-serif;font-size:17px;font-weight:700}
 .del{
-  width:38px;height:38px;flex-shrink:0;border:0;border-radius:10px;cursor:pointer;font-size:16px;
-  background:rgba(239,68,68,.14);transition:transform .2s,background .2s,color .2s;
+  width:38px;height:38px;flex-shrink:0;border:0;border-radius:12px;cursor:pointer;font-size:16px;
+  background:rgba(239,68,68,.14);transition:transform .2s,background .2s;
 }
 .del:hover{background:var(--bad);transform:scale(1.12) rotate(-8deg)}
 .del:active{transform:scale(.92)}
 .rate{
-  font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));
+  font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#6366f1,#a855f7);
   padding:5px 12px;border-radius:999px;white-space:nowrap;transition:transform .2s;
 }
 .rate:hover{transform:scale(1.06)}
-.arrow{color:var(--muted);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:inline-block;margin-left:8px}
+.arrow{color:var(--p2);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:inline-block;margin-left:8px}
 .card.open .arrow{transform:rotate(-90deg)}
 .panel{display:none;padding:0 18px 18px;border-top:1px solid var(--line)}
 .card.open .panel{display:block;animation:slideDown .3s ease}
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
 .full{grid-column:1 / -1}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
+label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
 .result{
-  margin-top:16px;padding:14px;border-radius:14px;color:#fff;font-weight:800;
-  background:linear-gradient(135deg,#059669,#10b981);display:flex;justify-content:space-between;align-items:center;
+  margin-top:16px;padding:14px 16px;border-radius:16px;color:#fff;font-weight:800;
+  background:linear-gradient(135deg,#059669,#10b981,#14b8a6);display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 8px 20px rgba(16,185,129,.25);
 }
 .result b{font-size:22px;font-family:Consolas,'Courier New',monospace;display:inline-block;animation:fadeUp .4s both}
 .savebar{
@@ -113,9 +153,9 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
   border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.08);
 }
 .savebar button{
-  width:100%;max-width:760px;margin:0 auto;display:block;padding:14px;border:0;border-radius:12px;cursor:pointer;
-  font-family:inherit;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));
-  transition:transform .2s,filter .2s,box-shadow .2s;
+  width:100%;max-width:760px;margin:0 auto;display:block;padding:14px;border:0;border-radius:14px;cursor:pointer;
+  font-family:inherit;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2),#ec4899);
+  background-size:200% 200%;animation:shimmer 6s ease infinite;transition:transform .2s,filter .2s,box-shadow .2s;
 }
 .savebar button:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 10px 22px rgba(79,70,229,.35)}
 .savebar button:active{transform:scale(.97)}
@@ -161,9 +201,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
       <input type="date" id="dDate" onchange="goDate(this.value)">
       <button class="navbtn" onclick="shiftDay(-1)">السابق ›</button>
     </div>
-    <select id="savedDays" onchange="goDate(this.value)">
-      <option value="">-- أيام محفوظة قبل كده --</option>
-    </select>
+    <div id="savedDaysWrap"></div>
     <div id="dLabel"></div>
     <div id="dStatus"></div>
   </div>
@@ -178,7 +216,11 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-const RECEIVERS = ['Ahmed', 'Ibrahim'];
+const RECV_OPTS = [
+  { v: '', l: '-- المستلم --' },
+  { v: 'Ahmed', l: 'Ahmed' },
+  { v: 'Ibrahim', l: 'Ibrahim' }
+];
 const BLANK = () => ({
   total: '', count: '', cash: '',
   insta: '', instaRecv: '',
@@ -245,17 +287,69 @@ function dmy(iso) {
 }
 function sv(v) { return v ? String(v) : ''; }
 
+// ---------- القايمة المنسدلة ----------
+
+// opts: [{v, l}] والعنصر الأول بيكون placeholder
+function ddHTML(opts, value, placeholder, extra = '') {
+  const cur = value !== '' ? opts.find(o => o.v === value) : null;
+  const label = cur ? cur.l : placeholder;
+  return `<div class="dd${cur ? '' : ' empty'}" data-value="${esc(cur ? value : '')}" ${extra}>
+    <button type="button" class="dd-btn"><span class="dd-label">${esc(label)}</span><span class="dd-chev">▾</span></button>
+    <div class="dd-menu">${opts.map((o, k) =>
+      `<div class="dd-item${cur && o.v === value ? ' sel' : ''}${o.v === '' ? ' placeholder' : ''}" data-v="${esc(o.v)}" style="--k:${k}">${esc(o.l)}</div>`
+    ).join('')}</div>
+  </div>`;
+}
+
+function setDdValue(id, v) {
+  const root = document.getElementById(id);
+  if (!root) return;
+  const items = [...root.querySelectorAll('.dd-item')];
+  const item = v !== '' ? items.find(x => x.dataset.v === v) : null;
+  root.dataset.value = item ? v : '';
+  root.querySelector('.dd-label').textContent = item ? item.textContent : items[0].textContent;
+  root.classList.toggle('empty', !item);
+  items.forEach(x => x.classList.toggle('sel', x === item));
+}
+
+function pickDd(item) {
+  const root = item.closest('.dd');
+  const v = item.dataset.v;
+  root.dataset.value = v;
+  root.querySelector('.dd-label').textContent = item.textContent;
+  root.classList.toggle('empty', v === '');
+  root.querySelectorAll('.dd-item').forEach(x => x.classList.toggle('sel', x === item && v !== ''));
+  root.classList.remove('open');
+
+  if (root.dataset.key) {
+    const i = Number(root.dataset.i);
+    state[reps[i].name][root.dataset.key] = v;
+    dirty = true;
+    updSummary(i);
+  } else if (root.id === 'savedDays') {
+    goDate(v);
+  }
+}
+
+document.addEventListener('click', e => {
+  const item = e.target.closest('.dd-item');
+  if (item) { pickDd(item); return; }
+
+  const btn = e.target.closest('.dd-btn');
+  const root = btn ? btn.closest('.dd') : null;
+  const wasOpen = root && root.classList.contains('open');
+  document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
+  if (root && !wasOpen) root.classList.add('open');
+});
+
+// ---------- حسابات ----------
+
 function calcOf(name) {
   const s = state[name];
   const count = Number(s.count) || 0;
   const commission = count * rateOf(name);
   const total = Number(s.total) || 0;
   return { commission: commission, net: total - commission };
-}
-
-function recvOptions(cur) {
-  return '<option value="">-- المستلم --</option>' +
-    RECEIVERS.map(r => '<option value="' + r + '"' + (cur === r ? ' selected' : '') + '>' + r + '</option>').join('');
 }
 
 function toast(text, ok) {
@@ -277,7 +371,7 @@ function render() {
     <div class="card${open}">
       <div class="head">
         <button class="rep-head" data-toggle="${i}">
-          <span><span class="arrow">‹</span> ${esc(name)}</span>
+          <span><span class="arrow">‹</span> <span class="rep-name">${esc(name)}</span></span>
           <span class="rate">عمولة الشحنة: ${r.rate}</span>
         </button>
         <button class="del" data-clear="${i}" title="مسح بيانات المندوب" aria-label="مسح بيانات المندوب">🗑️</button>
@@ -303,17 +397,15 @@ function render() {
           <div class="full">
             <label>انستاباي</label>
             <div class="pair">
-              <input type="number" inputmode="decimal" min="0" placeholder="المبلغ"
-                data-i="${i}" data-key="insta" value="${sv(s.insta)}">
-              <select data-i="${i}" data-key="instaRecv">${recvOptions(s.instaRecv)}</select>
+              <input type="number" inputmode="decimal" min="0" placeholder="المبلغ" data-i="${i}" data-key="insta" value="${sv(s.insta)}">
+              ${ddHTML(RECV_OPTS, s.instaRecv, '-- المستلم --', `data-i="${i}" data-key="instaRecv"`)}
             </div>
           </div>
           <div class="full">
             <label>فودافون كاش</label>
             <div class="pair">
-              <input type="number" inputmode="decimal" min="0" placeholder="المبلغ"
-                data-i="${i}" data-key="voda" value="${sv(s.voda)}">
-              <select data-i="${i}" data-key="vodaRecv">${recvOptions(s.vodaRecv)}</select>
+              <input type="number" inputmode="decimal" min="0" placeholder="المبلغ" data-i="${i}" data-key="voda" value="${sv(s.voda)}">
+              ${ddHTML(RECV_OPTS, s.vodaRecv, '-- المستلم --', `data-i="${i}" data-key="vodaRecv"`)}
             </div>
           </div>
         </div>
@@ -347,21 +439,27 @@ listEl.addEventListener('click', e => {
   card.classList.toggle('open');
 });
 
-function onField(e) {
+listEl.addEventListener('input', e => {
   const el = e.target;
-  if (el.dataset.i === undefined) return;
+  if (el.dataset.i === undefined || !el.dataset.key) return;
   const i = Number(el.dataset.i);
   state[reps[i].name][el.dataset.key] = el.value;
   dirty = true;
   if (el.dataset.key === 'count' || el.dataset.key === 'total') updSummary(i);
+});
+
+function renderSavedDays() {
+  const opts = [{ v: '', l: '-- أيام محفوظة قبل كده --' }]
+    .concat(savedDaysList.map(d => ({ v: d, l: dmy(d) })));
+  const value = savedDaysList.includes(currentDate) ? currentDate : '';
+  document.getElementById('savedDaysWrap').innerHTML =
+    ddHTML(opts, value, '-- أيام محفوظة قبل كده --', 'id="savedDays"');
 }
-listEl.addEventListener('input', onField);
-listEl.addEventListener('change', onField);
 
 function setDateUI(date) {
   document.getElementById('dDate').value = date;
   document.getElementById('dLabel').textContent = 'حسابات يوم ' + dmy(date);
-  document.getElementById('savedDays').value = savedDaysList.includes(date) ? date : '';
+  setDdValue('savedDays', savedDaysList.includes(date) ? date : '');
 }
 
 function goDate(date) {
@@ -417,10 +515,7 @@ async function loadDay() {
 async function refreshDays() {
   try {
     savedDaysList = (await call('listDays')) || [];
-    const sel = document.getElementById('savedDays');
-    sel.innerHTML = '<option value="">-- أيام محفوظة قبل كده --</option>' +
-      savedDaysList.map(d => '<option value="' + d + '">' + dmy(d) + '</option>').join('');
-    sel.value = savedDaysList.includes(currentDate) ? currentDate : '';
+    renderSavedDays();
   } catch (e) {
     toast('تعذر تحميل قايمة الأيام: ' + e.message, false);
   }
@@ -496,6 +591,7 @@ function toggleTheme() {
   }
   resetState();
   render();
+  renderSavedDays();
   refreshDays();
   goDate(todayISO());
 })();
