@@ -2,126 +2,135 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>حسابات المناديب اليومية</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>حسابات المناديب</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#5b6485; --line:#e3e7f3;
-  --p1:#4f46e5; --p2:#7c3aed; --ok:#10b981; --bad:#ef4444; --warn:#f59e0b; --sky:#0ea5e9;
+  --p1:#4f46e5; --p2:#7c3aed; --ok:#10b981; --bad:#ef4444;
   --shadow:0 4px 18px rgba(79,70,229,.08);
-  --mono:'Consolas','Courier New',monospace;
 }
 [data-theme="dark"]{
   --bg:#0d1125; --surface:#161b37; --surface2:#1d2346; --ink:#f1f3ff; --muted:#b4bde3; --line:#2a3160;
   --shadow:0 4px 18px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
-body{
-  margin:0; font-family:'Cairo',Tahoma,Arial,sans-serif; background:var(--bg); color:var(--ink);
-  padding-bottom:40px; transition:background .3s,color .3s;
-}
+body{margin:0;font-family:'Cairo',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:90px;transition:background .3s,color .3s}
 header{
-  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
-  padding:16px 20px; color:#fff;
-  background:linear-gradient(120deg,#4f46e5,#7c3aed,#0ea5e9);
-  box-shadow:0 6px 24px rgba(79,70,229,.3);
+  display:flex;align-items:center;justify-content:space-between;padding:16px 20px;color:#fff;
+  background:linear-gradient(120deg,#4f46e5,#7c3aed,#0ea5e9);box-shadow:0 6px 24px rgba(79,70,229,.3);
 }
-header h1{margin:0; font-size:20px; font-weight:800}
-.theme{
-  width:40px; height:40px; border-radius:12px; border:0; cursor:pointer;
-  background:rgba(255,255,255,.2); color:#fff; font-size:18px;
-}
-main{max-width:1100px; margin:20px auto; padding:0 14px}
-.card{
-  background:var(--surface); border:1px solid var(--line); border-radius:16px;
-  padding:18px; box-shadow:var(--shadow); margin-bottom:16px; overflow-x:auto;
-}
-.daybar{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-.daybar input[type=date]{
-  flex:1; min-width:170px; padding:11px 12px; font-size:15px; font-family:inherit;
-  border:1.5px solid var(--line); border-radius:12px; background:var(--surface2); color:var(--ink);
-}
+header h1{margin:0;font-size:20px;font-weight:800}
+.theme{width:40px;height:40px;border-radius:12px;border:0;cursor:pointer;background:rgba(255,255,255,.2);color:#fff;font-size:18px}
+main{max-width:760px;margin:20px auto;padding:0 14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.daybar{padding:16px;display:flex;flex-direction:column;gap:10px}
+.daybar .row{display:flex;gap:8px;align-items:center}
+.daybar input[type=date]{flex:1;min-width:0}
 .navbtn{
-  padding:11px 16px; border:0; border-radius:12px; cursor:pointer; font-family:inherit; font-size:15px;
-  font-weight:700; color:#fff; background:linear-gradient(135deg,var(--p1),var(--p2));
+  padding:11px 14px;border:0;border-radius:12px;cursor:pointer;font-family:inherit;font-size:14px;
+  font-weight:700;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));white-space:nowrap;
 }
 .navbtn:active{transform:scale(.97)}
-#dLabel{font-weight:800; color:var(--p1); font-size:16px; margin-top:12px}
-.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
-.stat{
-  color:#fff; border-radius:14px; padding:14px; font-size:13px; font-weight:700;
-  display:flex; flex-direction:column; gap:6px; box-shadow:0 8px 20px rgba(0,0,0,.14);
+input,select{
+  width:100%;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;
 }
-.stat b{font-size:24px; font-weight:800}
-.s-blue{background:linear-gradient(135deg,#4f46e5,#7c3aed)}
-.s-green{background:linear-gradient(135deg,#059669,#10b981)}
-.s-red{background:linear-gradient(135deg,#dc2626,#f97316)}
-.s-amber{background:linear-gradient(135deg,#d97706,#fbbf24)}
-.s-sky{background:linear-gradient(135deg,#0284c7,#38bdf8)}
-h2{margin:0 0 12px; font-size:17px; font-weight:800}
-table{width:100%; border-collapse:separate; border-spacing:0; font-size:14px}
-th{background:var(--surface2); color:var(--muted); font-size:12.5px; font-weight:800; padding:10px 8px; text-align:right; white-space:nowrap}
-td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:right; font-weight:600; white-space:nowrap}
-tr.tot td{background:var(--surface2); font-weight:800; border-bottom:0}
-tr:hover td{background:rgba(79,70,229,.06)}
-.pos{color:var(--bad); font-weight:800}
-.zero{color:var(--ok); font-weight:800}
-.muted{color:var(--muted); font-size:12px}
-.loader{text-align:center; color:var(--muted); padding:24px; font-weight:700}
-.err{padding:12px; border-radius:12px; background:rgba(239,68,68,.12); color:var(--bad); font-weight:700}
-#toasts{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:100; width:min(92vw,420px); display:flex; flex-direction:column; gap:8px; pointer-events:none}
-.toast{padding:12px 14px; border-radius:12px; color:#fff; font-weight:700; font-size:14px; box-shadow:0 10px 24px rgba(0,0,0,.25)}
+input:focus,select:focus{border-color:var(--p1);background:var(--surface)}
+#dLabel{font-weight:800;color:var(--p1);font-size:15px}
+#dStatus{font-size:13px;color:var(--muted);font-weight:700}
+.rep-head{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;
+  border:0;background:transparent;color:var(--ink);cursor:pointer;font-family:inherit;font-size:16px;font-weight:800;text-align:right;
+}
+.rep-head:hover{background:rgba(79,70,229,.06)}
+.rate{font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));padding:5px 12px;border-radius:999px;white-space:nowrap}
+.arrow{color:var(--muted);transition:transform .2s;display:inline-block;margin-left:8px}
+.card.open .arrow{transform:rotate(-90deg)}
+.panel{display:none;padding:0 18px 18px;border-top:1px solid var(--line)}
+.card.open .panel{display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.full{grid-column:1 / -1}
+label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
+.wallet{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.result{
+  margin-top:16px;padding:14px;border-radius:14px;color:#fff;font-weight:800;
+  background:linear-gradient(135deg,#059669,#10b981);display:flex;justify-content:space-between;align-items:center;
+}
+.result b{font-size:22px;font-family:Consolas,'Courier New',monospace}
+.savebar{
+  position:fixed;bottom:0;left:0;right:0;padding:12px 14px;background:var(--surface);
+  border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.08);
+}
+.savebar button{
+  width:100%;max-width:760px;margin:0 auto;display:block;padding:14px;border:0;border-radius:12px;cursor:pointer;
+  font-family:inherit;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));
+}
+.savebar button:disabled{opacity:.6;cursor:not-allowed}
+#toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 14px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
 .toast.ok{background:linear-gradient(135deg,#059669,#10b981)}
 .toast.err{background:linear-gradient(135deg,#dc2626,#f97316)}
-
-/* الموبايل: الجدول يتحول لكروت */
-@media(max-width:700px){
-  header h1{font-size:17px}
-  table.rt thead{display:none}
-  table.rt, table.rt tbody, table.rt tr, table.rt td{display:block; width:100%}
-  table.rt tr{background:var(--surface2); border:1px solid var(--line); border-radius:14px; padding:6px 12px; margin-bottom:10px}
-  table.rt td{display:flex; justify-content:space-between; align-items:center; gap:10px; border:0; padding:7px 0; text-align:left; white-space:normal; font-size:14px}
-  table.rt td+td{border-top:1px dashed var(--line)}
-  table.rt td::before{content:attr(data-l); color:var(--muted); font-size:12.5px; font-weight:800}
-  table.rt tr.tot{background:linear-gradient(90deg,rgba(79,70,229,.12),var(--surface2))}
+@media(max-width:560px){
+  .grid{grid-template-columns:1fr}
+  .wallet{grid-template-columns:1fr}
+  .daybar .row{flex-wrap:wrap}
+  .daybar input[type=date]{flex:1 1 100%;order:-1}
 }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>حسابات المناديب اليومية</h1>
+  <h1>حسابات المناديب</h1>
   <button class="theme" onclick="toggleTheme()" title="تبديل الوضع">🌓</button>
 </header>
 
 <div id="toasts"></div>
 
 <main>
-  <div class="card">
-    <div class="daybar">
-      <button class="navbtn" onclick="shiftDay(1)">‹ اليوم التالي</button>
-      <input type="date" id="dDate" onchange="load()">
-      <button class="navbtn" onclick="shiftDay(-1)">اليوم اللي قبله ›</button>
+  <div class="card daybar">
+    <div class="row">
+      <button class="navbtn" onclick="shiftDay(1)">‹ التالي</button>
+      <input type="date" id="dDate" onchange="goDate(this.value)">
+      <button class="navbtn" onclick="shiftDay(-1)">السابق ›</button>
     </div>
+    <select id="savedDays" onchange="goDate(this.value)">
+      <option value="">-- أيام محفوظة قبل كده --</option>
+    </select>
     <div id="dLabel"></div>
+    <div id="dStatus"></div>
   </div>
 
-  <div class="card">
-    <div id="stats" class="stats"><div class="loader">جاري التحميل...</div></div>
-  </div>
-
-  <div class="card">
-    <h2>حسابات كل مندوب</h2>
-    <div id="tBox"><div class="loader">جاري التحميل...</div></div>
-  </div>
+  <div id="list"></div>
 </main>
+
+<div class="savebar">
+  <button id="btnSave" onclick="saveDay()">💾 حفظ اليوم</button>
+</div>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
-const LOADING = '<div class="loader">جاري التحميل...</div>';
 
-let rows = [];
+const REPS = [
+  'محمود المستكاوي', 'محمود حاتم', 'حامد', 'مصطفي فاروق',
+  'محمد محسن', 'محمد ابو سيف', 'صابر كامل', 'عمرو سلامة'
+];
+const RATE_SPECIAL = { 'محمود المستكاوي': 30, 'محمد محسن': 30, 'محمد ابو سيف': 30 };
+const rateOf = n => RATE_SPECIAL[n] || 27;
+
+const BLANK = () => ({ total: '', count: '', cash: '', wtype: '', wamt: '', recv: '' });
+let state = {};
+let openSet = new Set();
+let currentDate = '';
+let dirty = false;
+let savedDaysList = [];
+
+function resetState() {
+  state = {};
+  REPS.forEach(n => state[n] = BLANK());
+}
 
 function call(action, params = {}) {
   return new Promise((resolve, reject) => {
@@ -142,29 +151,25 @@ function call(action, params = {}) {
 }
 
 function fmt(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
-
+function pad(n) { return String(n).padStart(2, '0'); }
 function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
-function pad(n) { return String(n).padStart(2, '0'); }
-
 function todayISO() {
   const d = new Date();
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
-
 function addDays(iso, n) {
   const [y, m, d] = iso.split('-').map(Number);
   const x = new Date(y, m - 1, d + n);
   return x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate());
 }
-
 function dmy(iso) {
   const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? m[3] + '/' + m[2] + '/' + m[1] : esc(iso);
 }
+function sv(v) { return v ? String(v) : ''; }
 
 function toast(text, ok) {
   const t = document.createElement('div');
@@ -174,80 +179,181 @@ function toast(text, ok) {
   setTimeout(() => t.remove(), 4000);
 }
 
-// جدول بيتحول لكروت على الموبايل
-function tbl(headers, body, foot) {
-  let h = '<div style="overflow-x:auto"><table class="rt"><thead><tr>' +
-    headers.map(x => '<th>' + x + '</th>').join('') + '</tr></thead><tbody>';
-  body.forEach(r => {
-    h += '<tr>' + r.map((c, i) => '<td data-l="' + esc(headers[i]) + '">' + c + '</td>').join('') + '</tr>';
-  });
-  if (foot) {
-    h += '<tr class="tot">' + foot.map((c, i) => '<td data-l="' + esc(headers[i]) + '">' + c + '</td>').join('') + '</tr>';
+function render() {
+  const list = document.getElementById('list');
+  list.innerHTML = REPS.map((name, i) => {
+    const s = state[name];
+    const open = openSet.has(i) ? ' open' : '';
+    return `
+    <div class="card${open}">
+      <button class="rep-head" data-toggle="${i}">
+        <span><span class="arrow">‹</span> ${esc(name)}</span>
+        <span class="rate">عمولة الشحنة: ${rateOf(name)}</span>
+      </button>
+      <div class="panel">
+        <div class="grid">
+          <div>
+            <label>الإجمالي</label>
+            <input type="number" inputmode="decimal" min="0" data-i="${i}" data-key="total" value="${sv(s.total)}">
+          </div>
+          <div>
+            <label>عدد الشحنات</label>
+            <input type="number" inputmode="numeric" min="0" data-i="${i}" data-key="count" value="${sv(s.count)}">
+          </div>
+          <div class="full">
+            <label>المتحصل كاش</label>
+            <input type="number" inputmode="decimal" min="0" data-i="${i}" data-key="cash" value="${sv(s.cash)}">
+          </div>
+          <div class="full">
+            <label>انستاباي / فودافون كاش</label>
+            <div class="wallet">
+              <select data-i="${i}" data-key="wtype">
+                <option value="">-- اختار --</option>
+                <option value="انستاباي" ${s.wtype === 'انستاباي' ? 'selected' : ''}>انستاباي</option>
+                <option value="فودافون كاش" ${s.wtype === 'فودافون كاش' ? 'selected' : ''}>فودافون كاش</option>
+              </select>
+              <input type="number" inputmode="decimal" min="0" placeholder="المبلغ"
+                data-i="${i}" data-key="wamt" value="${sv(s.wamt)}">
+              <select data-i="${i}" data-key="recv">
+                <option value="">-- المستلم --</option>
+                <option value="Ahmed" ${s.recv === 'Ahmed' ? 'selected' : ''}>Ahmed</option>
+                <option value="Ibrahim" ${s.recv === 'Ibrahim' ? 'selected' : ''}>Ibrahim</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="result">
+          <span>العمولة</span>
+          <b id="comm-${i}">${fmt((Number(s.count) || 0) * rateOf(name))}</b>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updComm(i) {
+  const name = REPS[i];
+  const c = Number(state[name].count) || 0;
+  document.getElementById('comm-' + i).textContent = fmt(c * rateOf(name));
+}
+
+const listEl = document.getElementById('list');
+
+listEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-toggle]');
+  if (!b) return;
+  const i = Number(b.dataset.toggle);
+  const card = b.parentElement;
+  if (openSet.has(i)) openSet.delete(i); else openSet.add(i);
+  card.classList.toggle('open');
+});
+
+function onField(e) {
+  const el = e.target;
+  if (el.dataset.i === undefined) return;
+  const i = Number(el.dataset.i);
+  state[REPS[i]][el.dataset.key] = el.value;
+  dirty = true;
+  if (el.dataset.key === 'count') updComm(i);
+}
+listEl.addEventListener('input', onField);
+listEl.addEventListener('change', onField);
+
+function setDateUI(date) {
+  document.getElementById('dDate').value = date;
+  document.getElementById('dLabel').textContent = 'حسابات يوم ' + dmy(date);
+  document.getElementById('savedDays').value = savedDaysList.includes(date) ? date : '';
+}
+
+// تغيير اليوم، مع تحذير لو فيه تعديلات مش متحفوظة
+function goDate(date) {
+  if (!date) return;
+  if (dirty && !confirm('فيه تعديلات مش متحفوظة، متأكد إنك عايز تغير اليوم؟')) {
+    setDateUI(currentDate);
+    return;
   }
-  return h + '</tbody></table></div>';
+  currentDate = date;
+  setDateUI(date);
+  loadDay();
 }
 
 function shiftDay(n) {
-  const input = document.getElementById('dDate');
-  input.value = addDays(input.value || todayISO(), n);
-  load();
+  goDate(addDays(currentDate || todayISO(), n));
 }
 
-async function load() {
-  const date = document.getElementById('dDate').value;
-  if (!date) return;
-  document.getElementById('dLabel').textContent = 'حسابات يوم ' + dmy(date);
-  document.getElementById('tBox').innerHTML = LOADING;
-  document.getElementById('stats').innerHTML = LOADING;
+async function loadDay() {
+  const date = currentDate;
+  const status = document.getElementById('dStatus');
+  status.textContent = 'جاري التحميل...';
+  resetState();
   try {
-    rows = (await call('getDailyAccounts', { date })) || [];
-    render();
+    const rows = await call('getDay', { date });
+    if (date !== currentDate) return;
+    if (rows === null) {
+      status.textContent = 'مفيش بيانات محفوظة لليوم ده، ابدأ الإدخال';
+    } else {
+      status.textContent = 'اليوم ده محفوظ، تقدر تعدل وتحفظ تاني';
+      rows.forEach(r => {
+        if (!state[r.rep]) return;
+        state[r.rep] = {
+          total: sv(r.total), count: sv(r.count), cash: sv(r.cash),
+          wtype: r.wtype, wamt: sv(r.wamt), recv: r.recv
+        };
+      });
+    }
   } catch (e) {
-    document.getElementById('tBox').innerHTML = '<div class="err">خطأ: ' + esc(e.message) + '</div>';
-    document.getElementById('stats').innerHTML = '';
+    if (date !== currentDate) return;
+    status.textContent = '';
+    toast(e.message, false);
+  }
+  dirty = false;
+  render();
+}
+
+async function refreshDays() {
+  try {
+    savedDaysList = (await call('listDays')) || [];
+    const sel = document.getElementById('savedDays');
+    sel.innerHTML = '<option value="">-- أيام محفوظة قبل كده --</option>' +
+      savedDaysList.map(d => '<option value="' + d + '">' + dmy(d) + '</option>').join('');
+    sel.value = savedDaysList.includes(currentDate) ? currentDate : '';
+  } catch (e) {
+    toast('تعذر تحميل قايمة الأيام: ' + e.message, false);
   }
 }
 
-function render() {
-  const sum = k => rows.reduce((s, b) => s + (Number(b[k]) || 0), 0);
+async function saveDay() {
+  if (!currentDate) return toast('اختار يوم الأول', false);
+  const items = REPS.map(name => {
+    const s = state[name];
+    const count = Number(s.count) || 0;
+    return {
+      rep: name,
+      total: Number(s.total) || 0,
+      count: count,
+      commission: count * rateOf(name),
+      cash: Number(s.cash) || 0,
+      wtype: s.wtype,
+      wamt: Number(s.wamt) || 0,
+      recv: s.recv
+    };
+  });
 
-  const totalBal = sum('balance');
-  document.getElementById('stats').innerHTML = [
-    ['الشحنات الناجحة', fmt(sum('ok')), 's-green'],
-    ['العمولة', fmt(sum('commission')), 's-blue'],
-    ['المحصّل اليوم', fmt(sum('collectedDay')), 's-sky'],
-    ['المدفوع اليوم', fmt(sum('paidDay')), 's-amber'],
-    ['المديونية الكلية', fmt(totalBal), totalBal > 0 ? 's-red' : 's-green']
-  ].map(([l, v, c]) => '<div class="stat ' + c + '">' + l + '<b>' + v + '</b></div>').join('');
-
-  const headers = ['المندوب', 'ناجح', 'مؤجل', 'متهرب', 'إلغاء', 'استبدال', 'استلام طرد',
-    'العمولة', 'المحصّل اليوم', 'المدفوع اليوم', 'المديونية لحد اليوم'];
-
-  const body = rows.map(b => [
-    '<b>' + esc(b.rep) + '</b>',
-    fmt(b.ok),
-    fmt(b.postponed),
-    fmt(b.escaped),
-    fmt(b.cancelled),
-    fmt(b.replaced),
-    fmt(b.received),
-    fmt(b.commission) + ' <span class="muted">(' + b.rate + ' للشحنة)</span>',
-    fmt(b.collectedDay),
-    fmt(b.paidDay),
-    '<span class="' + (b.balance > 0 ? 'pos' : 'zero') + '">' + fmt(b.balance) + '</span>'
-  ]);
-
-  const foot = [
-    'الإجمالي',
-    fmt(sum('ok')), fmt(sum('postponed')), fmt(sum('escaped')), fmt(sum('cancelled')),
-    fmt(sum('replaced')), fmt(sum('received')), fmt(sum('commission')),
-    fmt(sum('collectedDay')), fmt(sum('paidDay')),
-    '<span class="' + (totalBal > 0 ? 'pos' : 'zero') + '">' + fmt(totalBal) + '</span>'
-  ];
-
-  document.getElementById('tBox').innerHTML = rows.length
-    ? tbl(headers, body, foot)
-    : '<div class="loader">مفيش بيانات لليوم ده</div>';
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.textContent = 'جاري الحفظ...';
+  try {
+    await call('saveDay', { date: currentDate, data: JSON.stringify(items) });
+    dirty = false;
+    document.getElementById('dStatus').textContent = 'اتحفظ اليوم ده بنجاح';
+    toast('تم حفظ يوم ' + dmy(currentDate), true);
+    await refreshDays();
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 حفظ اليوم';
+  }
 }
 
 function toggleTheme() {
@@ -259,8 +365,10 @@ function toggleTheme() {
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.documentElement.setAttribute('data-theme', 'dark');
   }
-  document.getElementById('dDate').value = todayISO();
-  load();
+  resetState();
+  render();
+  refreshDays();
+  goDate(todayISO());
 })();
 </script>
 </body>
