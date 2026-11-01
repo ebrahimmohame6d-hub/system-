@@ -41,11 +41,17 @@ input:focus,select:focus{border-color:var(--p1);background:var(--surface)}
 input[readonly]{opacity:.85;cursor:default}
 #dLabel{font-weight:800;color:var(--p1);font-size:15px}
 #dStatus{font-size:13px;color:var(--muted);font-weight:700}
+.head{display:flex;align-items:center;gap:8px;padding-left:12px}
 .rep-head{
-  width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;
+  flex:1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;
   border:0;background:transparent;color:var(--ink);cursor:pointer;font-family:inherit;font-size:16px;font-weight:800;text-align:right;
 }
 .rep-head:hover{background:rgba(79,70,229,.06)}
+.del{
+  width:38px;height:38px;flex-shrink:0;border:0;border-radius:10px;cursor:pointer;font-size:16px;
+  background:rgba(239,68,68,.14);transition:background .2s;
+}
+.del:hover{background:var(--bad)}
 .rate{font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));padding:5px 12px;border-radius:999px;white-space:nowrap}
 .arrow{color:var(--muted);transition:transform .2s;display:inline-block;margin-left:8px}
 .card.open .arrow{transform:rotate(-90deg)}
@@ -60,6 +66,12 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
   background:linear-gradient(135deg,#059669,#10b981);display:flex;justify-content:space-between;align-items:center;
 }
 .result b{font-size:22px;font-family:Consolas,'Courier New',monospace}
+.addbox{padding:16px;display:grid;grid-template-columns:1fr 110px auto;gap:10px;align-items:end}
+.addbox button{
+  padding:12px 16px;border:0;border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;
+  color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));white-space:nowrap;
+}
+.addbox button:disabled{opacity:.6;cursor:not-allowed}
 .savebar{
   position:fixed;bottom:0;left:0;right:0;padding:12px 14px;background:var(--surface);
   border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.08);
@@ -76,6 +88,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
 @media(max-width:560px){
   .grid{grid-template-columns:1fr}
   .pair{grid-template-columns:1fr}
+  .addbox{grid-template-columns:1fr}
   .daybar .row{flex-wrap:wrap}
   .daybar input[type=date]{flex:1 1 100%;order:-1}
 }
@@ -105,6 +118,20 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
   </div>
 
   <div id="list"></div>
+
+  <div class="card">
+    <div class="addbox">
+      <div>
+        <label>اسم المندوب الجديد</label>
+        <input type="text" id="newName" placeholder="اكتب الاسم">
+      </div>
+      <div>
+        <label>العمولة</label>
+        <input type="number" id="newRate" value="27" min="1">
+      </div>
+      <button id="btnAddRep" onclick="addRep()">➕ إضافة مندوب</button>
+    </div>
+  </div>
 </main>
 
 <div class="savebar">
@@ -114,29 +141,32 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-const REPS = [
-  'محمود المستكاوي', 'محمود حاتم', 'حامد', 'مصطفي فاروق',
-  'محمد محسن', 'محمد ابو سيف', 'صابر كامل', 'عمرو سلامة', 'أدهم'
-];
 const RECEIVERS = ['Ahmed', 'Ibrahim'];
-const RATE_SPECIAL = { 'محمود المستكاوي': 30, 'محمد محسن': 30, 'محمد ابو سيف': 30 };
-const rateOf = n => RATE_SPECIAL[n] || 27;
-
 const BLANK = () => ({
   total: '', count: '', cash: '',
   insta: '', instaRecv: '',
   voda: '', vodaRecv: ''
 });
 
+let reps = [];
 let state = {};
 let openSet = new Set();
 let currentDate = '';
 let dirty = false;
 let savedDaysList = [];
 
+function rateOf(name) {
+  const r = reps.find(x => x.name === name);
+  return r ? r.rate : 27;
+}
+
+function ensureState() {
+  reps.forEach(r => { if (!state[r.name]) state[r.name] = BLANK(); });
+}
+
 function resetState() {
   state = {};
-  REPS.forEach(n => state[n] = BLANK());
+  ensureState();
 }
 
 function call(action, params = {}) {
@@ -178,7 +208,6 @@ function dmy(iso) {
 }
 function sv(v) { return v ? String(v) : ''; }
 
-// حساب العمولة والصافي لمندوب
 function calcOf(name) {
   const s = state[name];
   const count = Number(s.count) || 0;
@@ -202,16 +231,20 @@ function toast(text, ok) {
 
 function render() {
   const list = document.getElementById('list');
-  list.innerHTML = REPS.map((name, i) => {
+  list.innerHTML = reps.map((r, i) => {
+    const name = r.name;
     const s = state[name];
     const c = calcOf(name);
     const open = openSet.has(i) ? ' open' : '';
     return `
     <div class="card${open}">
-      <button class="rep-head" data-toggle="${i}">
-        <span><span class="arrow">‹</span> ${esc(name)}</span>
-        <span class="rate">عمولة الشحنة: ${rateOf(name)}</span>
-      </button>
+      <div class="head">
+        <button class="rep-head" data-toggle="${i}">
+          <span><span class="arrow">‹</span> ${esc(name)}</span>
+          <span class="rate">عمولة الشحنة: ${r.rate}</span>
+        </button>
+        <button class="del" data-clear="${i}" title="مسح بيانات المندوب" aria-label="مسح بيانات المندوب">🗑️</button>
+      </div>
       <div class="panel">
         <div class="grid">
           <div>
@@ -256,9 +289,8 @@ function render() {
   }).join('');
 }
 
-// تحديث خانة العمولة والمربع الأخضر لمندوب واحد
 function updSummary(i) {
-  const name = REPS[i];
+  const name = reps[i].name;
   const c = calcOf(name);
   document.getElementById('comm-' + i).value = fmt(c.commission);
   document.getElementById('net-' + i).textContent = fmt(c.net);
@@ -267,10 +299,13 @@ function updSummary(i) {
 const listEl = document.getElementById('list');
 
 listEl.addEventListener('click', e => {
+  const clr = e.target.closest('[data-clear]');
+  if (clr) { clearRep(Number(clr.dataset.clear)); return; }
+
   const b = e.target.closest('[data-toggle]');
   if (!b) return;
   const i = Number(b.dataset.toggle);
-  const card = b.parentElement;
+  const card = b.closest('.card');
   if (openSet.has(i)) openSet.delete(i); else openSet.add(i);
   card.classList.toggle('open');
 });
@@ -279,7 +314,7 @@ function onField(e) {
   const el = e.target;
   if (el.dataset.i === undefined) return;
   const i = Number(el.dataset.i);
-  state[REPS[i]][el.dataset.key] = el.value;
+  state[reps[i].name][el.dataset.key] = el.value;
   dirty = true;
   if (el.dataset.key === 'count' || el.dataset.key === 'total') updSummary(i);
 }
@@ -305,6 +340,11 @@ function goDate(date) {
 
 function shiftDay(n) {
   goDate(addDays(currentDate || todayISO(), n));
+}
+
+async function loadReps() {
+  reps = (await call('getReps')) || [];
+  ensureState();
 }
 
 async function loadDay() {
@@ -349,9 +389,9 @@ async function refreshDays() {
   }
 }
 
-async function saveDay() {
-  if (!currentDate) return toast('اختار يوم الأول', false);
-  const items = REPS.map(name => {
+async function persistDay() {
+  const items = reps.map(r => {
+    const name = r.name;
     const s = state[name];
     const c = calcOf(name);
     return {
@@ -366,16 +406,20 @@ async function saveDay() {
       vodaRecv: s.vodaRecv
     };
   });
+  await call('saveDay', { date: currentDate, data: JSON.stringify(items) });
+  dirty = false;
+  document.getElementById('dStatus').textContent = 'اتحفظ اليوم ده بنجاح';
+  await refreshDays();
+}
 
+async function saveDay() {
+  if (!currentDate) return toast('اختار يوم الأول', false);
   const btn = document.getElementById('btnSave');
   btn.disabled = true;
   btn.textContent = 'جاري الحفظ...';
   try {
-    await call('saveDay', { date: currentDate, data: JSON.stringify(items) });
-    dirty = false;
-    document.getElementById('dStatus').textContent = 'اتحفظ اليوم ده بنجاح';
+    await persistDay();
     toast('تم حفظ يوم ' + dmy(currentDate), true);
-    await refreshDays();
   } catch (e) {
     toast(e.message, false);
   } finally {
@@ -384,14 +428,59 @@ async function saveDay() {
   }
 }
 
+async function clearRep(i) {
+  const name = reps[i].name;
+  if (!confirm('متأكد إنك عايز تمسح بيانات ' + name + ' لليوم ده؟\nهتتمسح من الشيت كمان.')) return;
+  state[name] = BLANK();
+  render();
+  if (!currentDate) return;
+  try {
+    await persistDay();
+    toast('اتمسحت بيانات ' + name, true);
+  } catch (e) {
+    dirty = true;
+    toast(e.message, false);
+  }
+}
+
+async function addRep() {
+  const nameEl = document.getElementById('newName');
+  const rateEl = document.getElementById('newRate');
+  const name = nameEl.value.trim();
+  const rate = Number(rateEl.value);
+  if (!name) return toast('اكتب اسم المندوب', false);
+  if (!(rate > 0)) return toast('اكتب العمولة', false);
+
+  const btn = document.getElementById('btnAddRep');
+  btn.disabled = true;
+  try {
+    await call('addRep', { name: name, rate: rate });
+    await loadReps();
+    nameEl.value = '';
+    rateEl.value = '27';
+    render();
+    if (currentDate) await persistDay();
+    toast('تم إضافة ' + name, true);
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme');
   document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
 }
 
-(function init() {
+(async function init() {
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  try {
+    await loadReps();
+  } catch (e) {
+    toast('تعذر تحميل المناديب: ' + e.message, false);
   }
   resetState();
   render();
