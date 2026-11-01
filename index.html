@@ -38,6 +38,7 @@ input,select{
   border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;
 }
 input:focus,select:focus{border-color:var(--p1);background:var(--surface)}
+input[readonly]{opacity:.85;cursor:default}
 #dLabel{font-weight:800;color:var(--p1);font-size:15px}
 #dStatus{font-size:13px;color:var(--muted);font-weight:700}
 .rep-head{
@@ -50,7 +51,7 @@ input:focus,select:focus{border-color:var(--p1);background:var(--surface)}
 .card.open .arrow{transform:rotate(-90deg)}
 .panel{display:none;padding:0 18px 18px;border-top:1px solid var(--line)}
 .card.open .panel{display:block}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
 .full{grid-column:1 / -1}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
@@ -177,7 +178,15 @@ function dmy(iso) {
 }
 function sv(v) { return v ? String(v) : ''; }
 
-// قايمة المستلم: الاختيار بيتحدد بشكل مستقل لكل محفظة
+// حساب العمولة والصافي لمندوب
+function calcOf(name) {
+  const s = state[name];
+  const count = Number(s.count) || 0;
+  const commission = count * rateOf(name);
+  const total = Number(s.total) || 0;
+  return { commission: commission, net: total - commission };
+}
+
 function recvOptions(cur) {
   return '<option value="">-- المستلم --</option>' +
     RECEIVERS.map(r => '<option value="' + r + '"' + (cur === r ? ' selected' : '') + '>' + r + '</option>').join('');
@@ -195,6 +204,7 @@ function render() {
   const list = document.getElementById('list');
   list.innerHTML = REPS.map((name, i) => {
     const s = state[name];
+    const c = calcOf(name);
     const open = openSet.has(i) ? ' open' : '';
     return `
     <div class="card${open}">
@@ -211,6 +221,10 @@ function render() {
           <div>
             <label>عدد الشحنات</label>
             <input type="number" inputmode="numeric" min="0" data-i="${i}" data-key="count" value="${sv(s.count)}">
+          </div>
+          <div>
+            <label>العمولة</label>
+            <input type="text" id="comm-${i}" readonly value="${fmt(c.commission)}">
           </div>
           <div class="full">
             <label>المتحصل كاش</label>
@@ -234,18 +248,20 @@ function render() {
           </div>
         </div>
         <div class="result">
-          <span>العمولة</span>
-          <b id="comm-${i}">${fmt((Number(s.count) || 0) * rateOf(name))}</b>
+          <span>الإجمالي بعد خصم العمولة</span>
+          <b id="net-${i}">${fmt(c.net)}</b>
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
-function updComm(i) {
+// تحديث خانة العمولة والمربع الأخضر لمندوب واحد
+function updSummary(i) {
   const name = REPS[i];
-  const c = Number(state[name].count) || 0;
-  document.getElementById('comm-' + i).textContent = fmt(c * rateOf(name));
+  const c = calcOf(name);
+  document.getElementById('comm-' + i).value = fmt(c.commission);
+  document.getElementById('net-' + i).textContent = fmt(c.net);
 }
 
 const listEl = document.getElementById('list');
@@ -265,7 +281,7 @@ function onField(e) {
   const i = Number(el.dataset.i);
   state[REPS[i]][el.dataset.key] = el.value;
   dirty = true;
-  if (el.dataset.key === 'count') updComm(i);
+  if (el.dataset.key === 'count' || el.dataset.key === 'total') updSummary(i);
 }
 listEl.addEventListener('input', onField);
 listEl.addEventListener('change', onField);
@@ -337,12 +353,12 @@ async function saveDay() {
   if (!currentDate) return toast('اختار يوم الأول', false);
   const items = REPS.map(name => {
     const s = state[name];
-    const count = Number(s.count) || 0;
+    const c = calcOf(name);
     return {
       rep: name,
       total: Number(s.total) || 0,
-      count: count,
-      commission: count * rateOf(name),
+      count: Number(s.count) || 0,
+      commission: c.commission,
       cash: Number(s.cash) || 0,
       insta: Number(s.insta) || 0,
       instaRecv: s.instaRecv,
