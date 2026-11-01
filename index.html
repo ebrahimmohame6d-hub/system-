@@ -265,7 +265,6 @@ function setDateUI(date) {
   document.getElementById('savedDays').value = savedDaysList.includes(date) ? date : '';
 }
 
-// تغيير اليوم، مع تحذير لو فيه تعديلات مش متحفوظة
 function goDate(date) {
   if (!date) return;
   if (dirty && !confirm('فيه تعديلات مش متحفوظة، متأكد إنك عايز تغير اليوم؟')) {
