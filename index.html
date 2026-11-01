@@ -52,8 +52,8 @@ input:focus,select:focus{border-color:var(--p1);background:var(--surface)}
 .card.open .panel{display:block}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
 .full{grid-column:1 / -1}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
-.wallet{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .result{
   margin-top:16px;padding:14px;border-radius:14px;color:#fff;font-weight:800;
   background:linear-gradient(135deg,#059669,#10b981);display:flex;justify-content:space-between;align-items:center;
@@ -74,7 +74,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
 .toast.err{background:linear-gradient(135deg,#dc2626,#f97316)}
 @media(max-width:560px){
   .grid{grid-template-columns:1fr}
-  .wallet{grid-template-columns:1fr}
+  .pair{grid-template-columns:1fr}
   .daybar .row{flex-wrap:wrap}
   .daybar input[type=date]{flex:1 1 100%;order:-1}
 }
@@ -117,10 +117,16 @@ const REPS = [
   'محمود المستكاوي', 'محمود حاتم', 'حامد', 'مصطفي فاروق',
   'محمد محسن', 'محمد ابو سيف', 'صابر كامل', 'عمرو سلامة', 'أدهم'
 ];
+const RECEIVERS = ['Ahmed', 'Ibrahim'];
 const RATE_SPECIAL = { 'محمود المستكاوي': 30, 'محمد محسن': 30, 'محمد ابو سيف': 30 };
 const rateOf = n => RATE_SPECIAL[n] || 27;
 
-const BLANK = () => ({ total: '', count: '', cash: '', wtype: '', wamt: '', recv: '' });
+const BLANK = () => ({
+  total: '', count: '', cash: '',
+  insta: '', instaRecv: '',
+  voda: '', vodaRecv: ''
+});
+
 let state = {};
 let openSet = new Set();
 let currentDate = '';
@@ -171,6 +177,12 @@ function dmy(iso) {
 }
 function sv(v) { return v ? String(v) : ''; }
 
+// قايمة المستلم: الاختيار بيتحدد بشكل مستقل لكل محفظة
+function recvOptions(cur) {
+  return '<option value="">-- المستلم --</option>' +
+    RECEIVERS.map(r => '<option value="' + r + '"' + (cur === r ? ' selected' : '') + '>' + r + '</option>').join('');
+}
+
 function toast(text, ok) {
   const t = document.createElement('div');
   t.className = 'toast ' + (ok ? 'ok' : 'err');
@@ -205,20 +217,19 @@ function render() {
             <input type="number" inputmode="decimal" min="0" data-i="${i}" data-key="cash" value="${sv(s.cash)}">
           </div>
           <div class="full">
-            <label>انستاباي / فودافون كاش</label>
-            <div class="wallet">
-              <select data-i="${i}" data-key="wtype">
-                <option value="">-- اختار --</option>
-                <option value="انستاباي" ${s.wtype === 'انستاباي' ? 'selected' : ''}>انستاباي</option>
-                <option value="فودافون كاش" ${s.wtype === 'فودافون كاش' ? 'selected' : ''}>فودافون كاش</option>
-              </select>
+            <label>انستاباي</label>
+            <div class="pair">
               <input type="number" inputmode="decimal" min="0" placeholder="المبلغ"
-                data-i="${i}" data-key="wamt" value="${sv(s.wamt)}">
-              <select data-i="${i}" data-key="recv">
-                <option value="">-- المستلم --</option>
-                <option value="Ahmed" ${s.recv === 'Ahmed' ? 'selected' : ''}>Ahmed</option>
-                <option value="Ibrahim" ${s.recv === 'Ibrahim' ? 'selected' : ''}>Ibrahim</option>
-              </select>
+                data-i="${i}" data-key="insta" value="${sv(s.insta)}">
+              <select data-i="${i}" data-key="instaRecv">${recvOptions(s.instaRecv)}</select>
+            </div>
+          </div>
+          <div class="full">
+            <label>فودافون كاش</label>
+            <div class="pair">
+              <input type="number" inputmode="decimal" min="0" placeholder="المبلغ"
+                data-i="${i}" data-key="voda" value="${sv(s.voda)}">
+              <select data-i="${i}" data-key="vodaRecv">${recvOptions(s.vodaRecv)}</select>
             </div>
           </div>
         </div>
@@ -296,7 +307,8 @@ async function loadDay() {
         if (!state[r.rep]) return;
         state[r.rep] = {
           total: sv(r.total), count: sv(r.count), cash: sv(r.cash),
-          wtype: r.wtype, wamt: sv(r.wamt), recv: r.recv
+          insta: sv(r.insta), instaRecv: r.instaRecv || '',
+          voda: sv(r.voda), vodaRecv: r.vodaRecv || ''
         };
       });
     }
@@ -332,9 +344,10 @@ async function saveDay() {
       count: count,
       commission: count * rateOf(name),
       cash: Number(s.cash) || 0,
-      wtype: s.wtype,
-      wamt: Number(s.wamt) || 0,
-      recv: s.recv
+      insta: Number(s.insta) || 0,
+      instaRecv: s.instaRecv,
+      voda: Number(s.voda) || 0,
+      vodaRecv: s.vodaRecv
     };
   });
 
