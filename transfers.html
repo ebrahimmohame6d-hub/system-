@@ -153,7 +153,7 @@ td .amt.zero{color:var(--muted);font-weight:600}
 
 <header>
   <h1>💸 تحويلات المستلمين</h1>
-  <button class="hbtn theme" id="themeBtn" onclick="toggleTheme(this)" title="تبديل الوضع" aria-label="تبديل الوضع">🌙</button>
+  <button class="hbtn theme" id="themeBtn" onclick="toggleTheme(this)" title="تبديل الوضع">🌙</button>
 </header>
 
 <div id="toasts"></div>
@@ -164,6 +164,7 @@ td .amt.zero{color:var(--muted);font-weight:600}
     <a class="nav-item" href="index.html"><span class="ni">📊</span> حسابات المناديب</a>
     <a class="nav-item" href="manage.html"><span class="ni">👥</span> المناديب</a>
     <a class="nav-item on" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
+    <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
   </aside>
 
   <main class="content">
@@ -232,40 +233,29 @@ function call(action, params = {}) {
 function fmt(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
 function pad(n) { return String(n).padStart(2, '0'); }
 function esc(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function todayISO() {
-  const d = new Date();
-  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-}
+function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
 function addDays(iso, n) {
   const [y, m, d] = iso.split('-').map(Number);
   const x = new Date(y, m - 1, d + n);
-  return x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate());
+  return x.getFullYear() + '-' + pad(x.getMonth()+1) + '-' + pad(x.getDate());
 }
 function dmy(iso) {
   const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? m[3] + '/' + m[2] + '/' + m[1] : esc(iso);
 }
 
-// ---------- الوضع (فاتح/داكن) ----------
+// ---------- الوضع ----------
 
-function paintThemeBtn(theme) {
-  const b = document.getElementById('themeBtn');
-  if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙';
-}
+function paintThemeBtn(theme) { const b = document.getElementById('themeBtn'); if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙'; }
 
 function toggleTheme(btn) {
   const cur = document.documentElement.getAttribute('data-theme');
   const next = cur === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   paintThemeBtn(next);
-  if (btn) {
-    btn.classList.remove('spin');
-    void btn.offsetWidth;
-    btn.classList.add('spin');
-  }
+  if (btn) { btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin'); }
 }
 
 function toast(text, ok) {
@@ -283,8 +273,7 @@ async function collectRows() {
   }
   const days = (await call('listDays')) || [];
   const results = await Promise.all(days.map(d => call('getDay', { date: d }).catch(() => null)));
-  let all = [];
-  let count = 0;
+  let all = [], count = 0;
   results.forEach(r => { if (r) { all = all.concat(r); count++; } });
   return { rows: all, days: count };
 }
@@ -308,9 +297,7 @@ async function render() {
       const ins = Number(r.insta) || 0;
       const vod = Number(r.voda) || 0;
       cash += c; insta += ins; voda += vod;
-
       byRep[r.rep] = (byRep[r.rep] || 0) + c;
-
       if (r.instaRecv && byRecv[r.instaRecv]) byRecv[r.instaRecv].insta += ins;
       if (r.vodaRecv && byRecv[r.vodaRecv]) byRecv[r.vodaRecv].voda += vod;
     });
@@ -368,11 +355,7 @@ function setMode(m) {
   render();
 }
 
-function onDate(v) {
-  if (!v) return;
-  curDate = v;
-  render();
-}
+function onDate(v) { if (!v) return; curDate = v; render(); }
 
 function shift(n) {
   curDate = addDays(curDate || todayISO(), n);
