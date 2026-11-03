@@ -71,47 +71,73 @@ main.content{flex:1;min-width:0;max-width:840px}
 .seg button.on{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
 .muted{color:var(--muted);font-weight:700;font-size:14px}
 
-/* الكروت الكبيرة */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stat{
-  position:relative;overflow:hidden;color:#fff;border-radius:16px;padding:16px;font-weight:700;font-size:13px;
-  box-shadow:0 10px 24px rgba(0,0,0,.14);animation:pop .55s both;transition:transform .3s,box-shadow .3s;
-}
-.stat:hover{transform:translateY(-4px) scale(1.02)}
-.stat b{display:block;margin-top:6px;font-size:24px;font-weight:800;font-family:Consolas,'Courier New',monospace}
+.sec{font-weight:800;font-size:17px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.sec::before{content:"";width:6px;height:20px;border-radius:4px;background:linear-gradient(var(--p1),var(--p2))}
+
+/* كروت الشركات */
+.co-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.co{border-radius:18px;padding:16px;color:#fff;box-shadow:0 10px 24px rgba(0,0,0,.14);animation:pop .55s both;transition:transform .3s,box-shadow .3s;position:relative;overflow:hidden}
+.co:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 30px rgba(0,0,0,.22)}
+.co::after{content:"";position:absolute;left:-30px;bottom:-34px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15)}
+.co:nth-child(2){animation-delay:.1s}
+.co:nth-child(3){animation-delay:.2s}
+.co h3{margin:0 0 8px;font-size:17px;font-weight:800}
+.co .sub{font-size:12px;opacity:.92;font-weight:700;margin-bottom:6px}
+.co .pv{font-family:Consolas,'Courier New',monospace;font-size:24px;font-weight:800;margin:6px 0}
 .s-oz{background:linear-gradient(135deg,#0284c7,#0ea5e9,#22d3ee)}
 .s-tl{background:linear-gradient(135deg,#7c3aed,#a855f7,#d946ef)}
 .s-mq{background:linear-gradient(135deg,#ea580c,#f97316,#fbbf24)}
-.s-all{background:linear-gradient(135deg,#059669,#10b981,#34d399)}
-
-.sec{font-weight:800;font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
-.sec::before{content:"";width:6px;height:20px;border-radius:4px;background:linear-gradient(var(--p1),var(--p2))}
-.tscroll{overflow-x:auto;border-radius:14px}
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;min-width:460px}
-th{background:linear-gradient(90deg,rgba(79,70,229,.12),rgba(124,58,237,.06));font-weight:800;padding:11px;text-align:center;white-space:nowrap}
-td{padding:12px 10px;text-align:center;font-weight:700;border-top:1px solid var(--line);animation:rowIn .45s both}
-tbody tr:hover td{background:rgba(79,70,229,.06)}
-td.name{text-align:right}
-.num{font-family:Consolas,'Courier New',monospace}
-.neg{color:var(--bad)!important}
-.tot td{background:linear-gradient(90deg,rgba(79,70,229,.14),var(--surface2));font-weight:800}
 
 /* ربح الشركة الإجمالي */
 .big{
-  margin-top:14px;padding:22px;border-radius:18px;color:#fff;display:flex;justify-content:space-between;align-items:center;
+  margin-top:4px;padding:20px 22px;border-radius:18px;color:#fff;display:flex;justify-content:space-between;align-items:center;
   background:linear-gradient(135deg,#059669,#10b981,#14b8a6);background-size:200% 200%;animation:shimmer 6s ease infinite;
   box-shadow:0 14px 30px rgba(16,185,129,.35);
 }
-.big b{font-size:34px;font-family:Consolas,'Courier New',monospace;animation:pop .6s both}
 .big span{font-size:18px;font-weight:800}
+.big b{font-size:34px;font-family:Consolas,'Courier New',monospace;animation:pop .6s both}
 
-.co-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-.co{
-  border-radius:16px;padding:16px;color:#fff;box-shadow:0 10px 24px rgba(0,0,0,.14);animation:pop .55s both;
+/* الجداول */
+.tscroll{overflow-x:auto;border-radius:16px;border:1px solid var(--line)}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;min-width:480px}
+thead th{
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:800;padding:13px 10px;
+  text-align:center;white-space:nowrap;font-size:14px;
 }
-.co h3{margin:0 0 6px;font-size:17px;font-weight:800}
-.co .sub{font-size:12px;opacity:.9;font-weight:700;margin-bottom:8px}
-.co .pv{font-family:Consolas,'Courier New',monospace;font-size:22px;font-weight:800}
+thead th:first-child{border-top-right-radius:16px}
+thead th:last-child{border-top-left-radius:16px}
+tbody td{
+  padding:13px 10px;text-align:center;font-weight:700;border-top:1px solid var(--line);
+  background:var(--surface);animation:rowIn .5s both;transition:background .2s;
+}
+tbody tr:nth-child(1) td{animation-delay:.05s}
+tbody tr:nth-child(2) td{animation-delay:.12s}
+tbody tr:nth-child(3) td{animation-delay:.19s}
+tbody tr:nth-child(4) td{animation-delay:.26s}
+tbody tr:nth-child(5) td{animation-delay:.33s}
+tbody tr:nth-child(6) td{animation-delay:.4s}
+tbody tr:hover td{background:rgba(79,70,229,.07)}
+td.name{text-align:right;font-weight:800}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:8px;vertical-align:middle}
+.dot.oz{background:#0ea5e9}
+.dot.tl{background:#a855f7}
+.dot.mq{background:#f97316}
+.num{font-family:Consolas,'Courier New',monospace;font-size:15px}
+.pill{
+  display:inline-block;min-width:44px;padding:4px 10px;border-radius:999px;font-family:Consolas,'Courier New',monospace;
+  font-weight:800;background:rgba(79,70,229,.1);color:var(--p1);
+}
+.pill.pos{background:rgba(16,185,129,.14);color:#059669}
+.pill.neg{background:rgba(239,68,68,.14);color:var(--bad)}
+.zero{color:var(--muted);font-weight:600}
+tr.tot td{background:linear-gradient(90deg,rgba(79,70,229,.14),var(--surface2));font-weight:800;border-top:2px solid var(--line)}
+tr.tot td:first-child{border-bottom-right-radius:16px}
+tr.tot td:last-child{border-bottom-left-radius:16px}
+
+/* شريط نسبة الربح لكل مندوب */
+.bar{height:8px;border-radius:999px;background:var(--surface2);overflow:hidden;margin-top:6px;min-width:80px}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#10b981,#14b8a6);animation:grow .9s ease both}
+@keyframes grow{from{width:0}}
 
 #toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{padding:12px 14px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(0,0,0,.25);animation:toastIn .4s cubic-bezier(.2,.9,.3,1.2)}
@@ -132,7 +158,6 @@ td.name{text-align:right}
   .side{width:100%;position:static;flex-direction:row;flex-wrap:wrap;padding:10px}
   .side-title{display:none}
   .nav-item{flex:1 1 auto;justify-content:center;padding:10px 8px;font-size:14px}
-  .stats{grid-template-columns:1fr 1fr}
   .co-cards{grid-template-columns:1fr}
 }
 </style>
@@ -195,11 +220,8 @@ td.name{text-align:right}
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-const CO_COLORS = {
-  oz: 's-oz', tl: 's-tl', mq: 's-mq'
-};
-
 let cfg = null;
+let rateMap = {};
 let mode = 'day';
 let curDate = '';
 
@@ -266,7 +288,7 @@ async function collectRows() {
   return { rows: all, days: n };
 }
 
-// يحسب ربح كل شركة ومندوب: (سعر الشركة − عمولة المندوب للشحنة) × عدد الشحنات
+// ربح الشركة = مجموع (سعر الشركة − عمولة المندوب للشحنة) × عدد الشحنات في كل خانة
 function compute(rows) {
   const CO = cfg.keys;
   const co = {};
@@ -274,11 +296,11 @@ function compute(rows) {
   const reps = {};
 
   rows.forEach(r => {
-    const rate = r.count > 0 ? r.commission / r.count : 0;
+    const rate = rateMap[r.rep] || 27;
     if (!reps[r.rep]) reps[r.rep] = { n: 0, p: 0 };
     CO.forEach(k => {
-      const zi = Number(r.zin[k]) || 0;
-      const zo = Number(r.zout[k]) || 0;
+      const zi = Number(r.zin && r.zin[k]) || 0;
+      const zo = Number(r.zout && r.zout[k]) || 0;
       const pi = zi * (cfg.prices.inZone[k] - rate);
       const po = zo * (cfg.prices.outZone[k] - rate);
       co[k].inN += zi; co[k].inP += pi;
@@ -291,6 +313,7 @@ function compute(rows) {
 }
 
 function signCls(v) { return v < 0 ? ' neg' : ''; }
+function pillCls(v) { return v < 0 ? 'pill neg' : v > 0 ? 'pill pos' : 'pill'; }
 
 async function render() {
   const coCards = document.getElementById('coCards');
@@ -301,6 +324,11 @@ async function render() {
 
   try {
     if (!cfg) cfg = await call('getPrices');
+    if (!Object.keys(rateMap).length) {
+      const reps = (await call('getReps')) || [];
+      reps.forEach(r => { rateMap[r.name] = r.rate; });
+    }
+
     const { rows, days } = await collectRows();
     const { co, reps } = compute(rows);
     const CO = cfg.keys;
@@ -311,67 +339,73 @@ async function render() {
 
     let grand = 0;
     CO.forEach(k => { grand += co[k].inP + co[k].outP; });
+    document.getElementById('grandProfit').textContent = fmt(grand);
 
-    // كروت الشركات
     coCards.innerHTML = CO.map((k, idx) => {
       const n = co[k].inN + co[k].outN;
       const p = co[k].inP + co[k].outP;
       const cls = ['s-oz', 's-tl', 's-mq'][idx];
       return `<div class="co ${cls}">
         <h3>${esc(cfg.names[k])}</h3>
-        <div class="sub">داخل: ${co[k].inN} شحنة | خارج: ${co[k].outN} شحنة</div>
+        <div class="sub">داخل: ${co[k].inN} | خارج: ${co[k].outN}</div>
         <div class="pv">${fmt(p)}</div>
-        <div class="sub">إجمالي شحنات: ${n}</div>
+        <div class="sub">إجمالي الشحنات: ${n}</div>
       </div>`;
     }).join('');
 
-    document.getElementById('grandProfit').textContent = fmt(grand);
-
-    // جدول تفصيل الشركات
+    const dotCls = { oz: 'oz', tl: 'tl', mq: 'mq' };
     const coRows = CO.map(k => {
-      const inN = co[k].inN, outN = co[k].outN;
-      const inP = co[k].inP, outP = co[k].outP;
+      const inN = co[k].inN, outN = co[k].outN, inP = co[k].inP, outP = co[k].outP;
       return `<tr>
-        <td class="name">${esc(cfg.names[k])}</td>
-        <td class="num">${inN}</td>
-        <td class="num${signCls(inP)}">${fmt(inP)}</td>
-        <td class="num">${outN}</td>
-        <td class="num${signCls(outP)}">${fmt(outP)}</td>
-        <td class="num">${inN + outN}</td>
-        <td class="num${signCls(inP + outP)}">${fmt(inP + outP)}</td>
+        <td class="name"><span class="dot ${dotCls[k]}"></span>${esc(cfg.names[k])}</td>
+        <td><span class="pill">${inN}</span></td>
+        <td><span class="${pillCls(inP)}">${fmt(inP)}</span></td>
+        <td><span class="pill">${outN}</span></td>
+        <td><span class="${pillCls(outP)}">${fmt(outP)}</span></td>
+        <td><span class="pill">${inN + outN}</span></td>
+        <td><span class="${pillCls(inP + outP)}">${fmt(inP + outP)}</span></td>
       </tr>`;
     }).join('');
+
     const totIn = CO.reduce((a, k) => a + co[k].inN, 0);
     const totInP = CO.reduce((a, k) => a + co[k].inP, 0);
     const totOut = CO.reduce((a, k) => a + co[k].outN, 0);
     const totOutP = CO.reduce((a, k) => a + co[k].outP, 0);
+
     coTable.innerHTML = `<div class="tscroll"><table>
-      <thead><tr><th>الشركة</th><th>داخل: عدد</th><th>داخل: ربح</th><th>خارج: عدد</th><th>خارج: ربح</th><th>الإجمالي: عدد</th><th>الإجمالي: ربح</th></tr></thead>
+      <thead><tr>
+        <th>الشركة</th><th>داخل: عدد</th><th>داخل: ربح</th><th>خارج: عدد</th><th>خارج: ربح</th><th>الإجمالي: عدد</th><th>الإجمالي: ربح</th>
+      </tr></thead>
       <tbody>${coRows}
-        <tr class="tot"><td class="name">الإجمالي</td>
-          <td class="num">${totIn}</td><td class="num">${fmt(totInP)}</td>
-          <td class="num">${totOut}</td><td class="num">${fmt(totOutP)}</td>
-          <td class="num">${totIn + totOut}</td><td class="num">${fmt(totInP + totOutP)}</td>
+        <tr class="tot">
+          <td class="name">الإجمالي</td>
+          <td><span class="pill">${totIn}</span></td><td><span class="${pillCls(totInP)}">${fmt(totInP)}</span></td>
+          <td><span class="pill">${totOut}</span></td><td><span class="${pillCls(totOutP)}">${fmt(totOutP)}</span></td>
+          <td><span class="pill">${totIn + totOut}</span></td><td><span class="${pillCls(totInP + totOutP)}">${fmt(totInP + totOutP)}</span></td>
         </tr>
       </tbody></table></div>`;
 
-    // جدول المناديب
-    const repList = Object.keys(reps).map(n => ({ name: n, n: reps[n].n, p: reps[n].p }))
-      .sort((a, b) => b.p - a.p);
+    const repList = Object.keys(reps).map(n => ({ name: n, n: reps[n].n, p: reps[n].p })).sort((a, b) => b.p - a.p);
     if (!repList.length) {
       repTable.innerHTML = '<div class="muted">مفيش بيانات</div>';
     } else {
+      const maxP = Math.max(...repList.map(r => Math.abs(r.p)), 1);
       const body = repList.map(r => `<tr>
         <td class="name">${esc(r.name)}</td>
-        <td class="num">${r.n}</td>
-        <td class="num${signCls(r.p)}">${fmt(r.p)}</td>
+        <td><span class="pill">${r.n}</span></td>
+        <td>
+          <span class="${pillCls(r.p)}">${fmt(r.p)}</span>
+          <div class="bar"><i style="width:${Math.round(Math.abs(r.p) / maxP * 100)}%"></i></div>
+        </td>
       </tr>`).join('');
       repTable.innerHTML = `<div class="tscroll"><table>
         <thead><tr><th>المندوب</th><th>عدد الشحنات (داخل + خارج)</th><th>ربح الشركة</th></tr></thead>
         <tbody>${body}
-          <tr class="tot"><td class="name">الإجمالي</td>
-            <td class="num">${repList.reduce((a, r) => a + r.n, 0)}</td>
-            <td class="num">${fmt(grand)}</td></tr>
+          <tr class="tot">
+            <td class="name">الإجمالي</td>
+            <td><span class="pill">${repList.reduce((a, r) => a + r.n, 0)}</span></td>
+            <td><span class="${pillCls(grand)}">${fmt(grand)}</span></td>
+          </tr>
         </tbody></table></div>`;
     }
   } catch (e) {
