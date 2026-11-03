@@ -25,7 +25,7 @@ header{
 header h1{margin:0;font-size:21px;font-weight:800;animation:fadeUp .5s both}
 .hbtn{
   height:40px;padding:0 14px;border-radius:12px;border:0;cursor:pointer;background:rgba(255,255,255,.2);
-  color:#fff;font-family:inherit;font-size:14px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+  color:#fff;font-family:inherit;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;
   transition:transform .2s,background .2s;
 }
 .hbtn:hover{transform:translateY(-2px);background:rgba(255,255,255,.32)}
@@ -48,7 +48,6 @@ main.content{flex:1;min-width:0;max-width:760px}
 .nav-item:hover{transform:translateX(-4px);background:linear-gradient(90deg,rgba(79,70,229,.14),rgba(124,58,237,.05))}
 .nav-item.on{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.3)}
 .nav-item .ni{font-size:18px;display:inline-block;animation:floatY 3s ease-in-out infinite}
-.nav-item.tr{background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff}
 .nav-item.hl{background:linear-gradient(135deg,#fbbf24,#f97316);color:#fff;animation:glow 2s ease-in-out infinite}
 
 .card{
@@ -71,7 +70,7 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
-/* ===== القايمة المنسدلة ===== */
+/* القايمة المنسدلة */
 .dd{position:relative;width:100%}
 .dd-btn{
   width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -173,7 +172,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
 <header>
   <h1>إدارة المناديب</h1>
-  <button class="hbtn theme" id="themeBtn" onclick="toggleTheme(this)" title="تبديل الوضع" aria-label="تبديل الوضع">🌙</button>
+  <button class="hbtn theme" id="themeBtn" onclick="toggleTheme(this)" title="تبديل الوضع">🌙</button>
 </header>
 
 <div id="toasts"></div>
@@ -183,7 +182,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
     <div class="side-title">القايمة</div>
     <a class="nav-item" href="index.html"><span class="ni">📊</span> حسابات المناديب</a>
     <a class="nav-item hl on" href="manage.html"><span class="ni">👥</span> المناديب</a>
-    <a class="nav-item tr" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
+    <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
+    <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
   </aside>
 
   <main class="content">
@@ -241,27 +241,19 @@ function call(action, params = {}) {
 }
 
 function esc(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ---------- الوضع (فاتح/داكن) ----------
+// ---------- الوضع ----------
 
-function paintThemeBtn(theme) {
-  const b = document.getElementById('themeBtn');
-  if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙';
-}
+function paintThemeBtn(theme) { const b = document.getElementById('themeBtn'); if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙'; }
 
 function toggleTheme(btn) {
   const cur = document.documentElement.getAttribute('data-theme');
   const next = cur === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   paintThemeBtn(next);
-  if (btn) {
-    btn.classList.remove('spin');
-    void btn.offsetWidth;
-    btn.classList.add('spin');
-  }
+  if (btn) { btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin'); }
 }
 
 // ---------- القايمة المنسدلة ----------
@@ -290,7 +282,6 @@ function pickDd(item) {
 document.addEventListener('click', e => {
   const item = e.target.closest('.dd-item');
   if (item) { pickDd(item); return; }
-
   const btn = e.target.closest('.dd-btn');
   const root = btn ? btn.closest('.dd') : null;
   const wasOpen = root && root.classList.contains('open');
