@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تحويلات المستلمين</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#5b6485; --line:#e3e7f3;
+  --p1:#4f46e5; --p2:#7c3aed; --bad:#ef4444;
+  --shadow:0 4px 18px rgba(79,70,229,.08);
+}
+[data-theme="dark"]{
+  --bg:#0d1125; --surface:#161b37; --surface2:#1d2346; --ink:#f1f3ff; --muted:#b4bde3; --line:#2a3160;
+  --shadow:0 4px 18px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Cairo',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:40px;transition:background .3s,color .3s}
+header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px;color:#fff;
+  background:linear-gradient(120deg,#0ea5e9,#3b82f6,#7c3aed);background-size:300% 300%;
+  box-shadow:0 6px 24px rgba(59,130,246,.3);animation:shimmer 10s ease infinite;
+}
+header h1{margin:0;font-size:21px;font-weight:800;animation:fadeUp .5s both}
+.hbtns{display:flex;gap:8px}
+.hbtn{
+  height:40px;padding:0 14px;border-radius:12px;border:0;cursor:pointer;background:rgba(255,255,255,.2);
+  color:#fff;font-family:inherit;font-size:14px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+  transition:transform .2s,background .2s;
+}
+.hbtn:hover{transform:translateY(-2px);background:rgba(255,255,255,.32)}
+.hbtn-hl{background:linear-gradient(135deg,#fbbf24,#f97316);animation:glow 2s ease-in-out infinite}
+main{max-width:820px;margin:20px auto;padding:0 14px}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+  padding:18px;margin-bottom:14px;animation:fadeUp .45s both;transition:transform .25s,box-shadow .25s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(79,70,229,.14)}
+.card:nth-child(2){animation-delay:.1s}
+.card:nth-child(3){animation-delay:.2s}
+
+.ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ctrl input[type=date]{
+  flex:1;min-width:160px;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;color-scheme:light;
+  transition:border-color .25s,box-shadow .25s;
+}
+[data-theme="dark"] .ctrl input[type=date]{color-scheme:dark}
+.ctrl input[type=date]:focus{border-color:var(--p1);box-shadow:0 0 0 4px rgba(79,70,229,.15)}
+.btn{
+  padding:11px 16px;border:0;border-radius:12px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;
+  color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));transition:transform .2s,filter .2s,box-shadow .2s;
+}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 10px 22px rgba(79,70,229,.35)}
+.btn:active{transform:scale(.97)}
+.btn.off{background:var(--surface2);color:var(--muted);box-shadow:none}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{
+  border:0;background:transparent;padding:8px 12px;border-radius:9px;font-family:inherit;font-size:14px;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:background .25s,color .25s,transform .2s;
+}
+.seg button:hover{transform:translateY(-1px)}
+.seg button.on{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{
+  position:relative;overflow:hidden;color:#fff;border-radius:16px;padding:16px;font-weight:700;font-size:13px;
+  box-shadow:0 10px 24px rgba(0,0,0,.14);animation:pop .55s both;transition:transform .3s,box-shadow .3s;
+}
+.stat:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 30px rgba(0,0,0,.22)}
+.stat:nth-child(1){animation-delay:.05s}
+.stat:nth-child(2){animation-delay:.12s}
+.stat:nth-child(3){animation-delay:.19s}
+.stat:nth-child(4){animation-delay:.26s}
+.stat::after{
+  content:"";position:absolute;left:-30px;bottom:-34px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15);
+}
+.stat b{display:block;margin-top:6px;font-size:24px;font-weight:800;font-family:Consolas,'Courier New',monospace;letter-spacing:.5px}
+.s-cash{background:linear-gradient(135deg,#059669,#10b981,#34d399)}
+.s-insta{background:linear-gradient(135deg,#7c3aed,#a855f7,#d946ef)}
+.s-voda{background:linear-gradient(135deg,#dc2626,#f97316,#fbbf24)}
+.s-all{background:linear-gradient(135deg,#0284c7,#0ea5e9,#22d3ee)}
+
+.sec{font-weight:800;font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.sec::before{content:"";width:6px;height:20px;border-radius:4px;background:linear-gradient(var(--p1),var(--p2))}
+.tscroll{overflow-x:auto;border-radius:14px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;min-width:420px}
+th{
+  background:linear-gradient(90deg,rgba(79,70,229,.12),rgba(124,58,237,.06));color:var(--ink);
+  font-weight:800;padding:12px;text-align:center;white-space:nowrap;
+}
+td{padding:13px 12px;text-align:center;font-weight:700;border-top:1px solid var(--line);animation:rowIn .45s both}
+tbody tr:nth-child(1) td{animation-delay:.05s}
+tbody tr:nth-child(2) td{animation-delay:.12s}
+tbody tr:nth-child(3) td{animation-delay:.19s}
+tbody tr:nth-child(4) td{animation-delay:.26s}
+tbody tr:nth-child(5) td{animation-delay:.33s}
+tbody tr:hover td{background:rgba(79,70,229,.06)}
+td.name{text-align:right;font-family:'Cairo',Tahoma,Arial,sans-serif}
+td .amt{font-family:Consolas,'Courier New',monospace;font-size:16px}
+td .amt.zero{color:var(--muted);font-weight:600}
+.tot td{background:linear-gradient(90deg,rgba(79,70,229,.14),var(--surface2));font-weight:800}
+.badge{
+  display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;color:#fff;
+  background:linear-gradient(135deg,#6366f1,#a855f7);margin-right:6px;
+}
+.muted{color:var(--muted);font-weight:700;font-size:14px;padding:10px 0}
+
+.cashnote{
+  margin-top:14px;padding:14px 16px;border-radius:14px;background:var(--surface2);border:1px dashed var(--line);
+  display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--muted);
+}
+.cashnote b{font-family:Consolas,'Courier New',monospace;font-size:18px;color:#059669}
+
+#toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 14px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(0,0,0,.25);animation:toastIn .4s cubic-bezier(.2,.9,.3,1.2)}
+.toast.ok{background:linear-gradient(135deg,#059669,#10b981)}
+.toast.err{background:linear-gradient(135deg,#dc2626,#f97316)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.35),0 6px 18px rgba(249,115,22,.45)}50%{box-shadow:0 0 0 6px rgba(255,255,255,.15),0 10px 30px rgba(249,115,22,.85)}}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:700px){
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💸 تحويلات المستلمين</h1>
+  <div class="hbtns">
+    <a class="hbtn hbtn-hl" href="index.html">⬅ الحسابات</a>
+    <button class="hbtn" onclick="toggleTheme()" title="تبديل الوضع">🌓</button>
+  </div>
+</header>
+
+<div id="toasts"></div>
+
+<main>
+  <div class="card">
+    <div class="ctrl">
+      <button class="btn" onclick="shift(1)">‹ التالي</button>
+      <input type="date" id="tDate" onchange="onDate(this.value)">
+      <button class="btn" onclick="shift(-1)">السابق ›</button>
+    </div>
+    <div class="ctrl" style="margin-top:12px;justify-content:space-between">
+      <div class="seg">
+        <button id="modeDay" class="on" onclick="setMode('day')">يوم واحد</button>
+        <button id="modeAll" onclick="setMode('all')">كل الأيام</button>
+      </div>
+      <div id="scopeLabel" class="muted" style="padding:0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="stats">
+      <div class="stat s-cash">الكاش المحصّل<b id="sCash">0</b></div>
+      <div class="stat s-insta">انستاباي<b id="sInsta">0</b></div>
+      <div class="stat s-voda">فودافون كاش<b id="sVoda">0</b></div>
+      <div class="stat s-all">إجمالي التحويلات<b id="sAll">0</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">تحويلات كل مستلم</h2>
+    <div id="tBox"><div class="muted">جاري التحميل...</div></div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">الكاش لكل مندوب</h2>
+    <div id="cashBox"><div class="muted">جاري التحميل...</div></div>
+  </div>
+</main>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
+
+let mode = 'day';
+let curDate = '';
+let recvList = [];
+let reps = [];
+
+function call(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const qs = new URLSearchParams({ ...params, action, callback: cbName });
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('انتهت مهلة الاتصال، جرب تاني')); }, 20000);
+    function cleanup() { clearTimeout(timer); delete window[cbName]; script.remove(); }
+    window[cbName] = res => {
+      cleanup();
+      if (res && res.ok) resolve(res.data);
+      else reject(new Error((res && res.error) || 'حصل خطأ'));
+    };
+    script.onerror = () => { cleanup(); reject(new Error('فشل الاتصال بالسيرفر')); };
+    script.src = API_URL + '?' + qs.toString();
+    document.body.appendChild(script);
+  });
+}
+
+function fmt(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function pad(n) { return String(n).padStart(2, '0'); }
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function todayISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+function addDays(iso, n) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const x = new Date(y, m - 1, d + n);
+  return x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate());
+}
+function dmy(iso) {
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[3] + '/' + m[2] + '/' + m[1] : esc(iso);
+}
+
+function toast(text, ok) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.textContent = text;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+}
+
+// يجمع الأيام المطلوبة: يوم واحد أو كل الأيام المحفوظة
+async function collectRows() {
+  if (mode === 'day') {
+    const rows = await call('getDay', { date: curDate });
+    return { rows: rows || [], days: rows ? 1 : 0 };
+  }
+  const days = (await call('listDays')) || [];
+  const results = await Promise.all(days.map(d => call('getDay', { date: d }).catch(() => null)));
+  let all = [];
+  let count = 0;
+  results.forEach(r => { if (r) { all = all.concat(r); count++; } });
+  return { rows: all, days: count };
+}
+
+async function render() {
+  const tBox = document.getElementById('tBox');
+  const cBox = document.getElementById('cashBox');
+  tBox.innerHTML = '<div class="muted">جاري التحميل...</div>';
+  cBox.innerHTML = '<div class="muted">جاري التحميل...</div>';
+
+  try {
+    const { rows, days } = await collectRows();
+
+    let cash = 0, insta = 0, voda = 0;
+    const byRecv = {};
+    recvList.forEach(n => { byRecv[n] = { insta: 0, voda: 0 }; });
+
+    const byRep = {};
+    rows.forEach(r => {
+      const c = Number(r.cash) || 0;
+      const ins = Number(r.insta) || 0;
+      const vod = Number(r.voda) || 0;
+      cash += c; insta += ins; voda += vod;
+
+      if (!byRep[r.rep]) byRep[r.rep] = 0;
+      byRep[r.rep] += c;
+
+      if (r.instaRecv && byRecv[r.instaRecv]) byRecv[r.instaRecv].insta += ins;
+      if (r.vodaRecv && byRecv[r.vodaRecv]) byRecv[r.vodaRecv].voda += vod;
+    });
+
+    document.getElementById('sCash').textContent = fmt(cash);
+    document.getElementById('sInsta').textContent = fmt(insta);
+    document.getElementById('sVoda').textContent = fmt(voda);
+    document.getElementById('sAll').textContent = fmt(insta + voda);
+
+    document.getElementById('scopeLabel').textContent = mode === 'day'
+      ? 'يوم ' + dmy(curDate) + (days ? '' : ' (مفيش بيانات محفوظة)')
+      : 'كل الأيام المحفوظة (' + days + ' يوم)';
+
+    if (!recvList.length) {
+      tBox.innerHTML = '<div class="muted">مفيش مستلمين</div>';
+    } else {
+      let ti = 0, tv = 0;
+      const body = recvList.map(n => {
+        const v = byRecv[n] || { insta: 0, voda: 0 };
+        ti += v.insta; tv += v.voda;
+        return `<tr>
+          <td class="name"><span class="badge">👤</span>${esc(n)}</td>
+          <td><span class="amt ${v.insta ? '' : 'zero'}">${fmt(v.insta)}</span></td>
+          <td><span class="amt ${v.voda ? '' : 'zero'}">${fmt(v.voda)}</span></td>
+          <td><span class="amt">${fmt(v.insta + v.voda)}</span></td>
+        </tr>`;
+      }).join('');
+      tBox.innerHTML = `<div class="tscroll"><table>
+        <thead><tr><th>المستلم</th><th>انستاباي</th><th>فودافون كاش</th><th>الإجمالي</th></tr></thead>
+        <tbody>${body}
+          <tr class="tot"><td class="name">الإجمالي</td><td><span class="amt">${fmt(ti)}</span></td><td><span class="amt">${fmt(tv)}</span></td><td><span class="amt">${fmt(ti + tv)}</span></td></tr>
+        </tbody></table></div>`;
+    }
+
+    const cashRows = reps.map(r => {
+      const v = byRep[r.name] || 0;
+      return `<tr><td class="name">${esc(r.name)}</td><td><span class="amt ${v ? '' : 'zero'}">${fmt(v)}</span></td></tr>`;
+    }).join('');
+    cBox.innerHTML = `<div class="tscroll"><table>
+      <thead><tr><th>المندوب</th><th>الكاش المحصّل</th></tr></thead>
+      <tbody>${cashRows}
+        <tr class="tot"><td class="name">الإجمالي</td><td><span class="amt">${fmt(cash)}</span></td></tr>
+      </tbody></table></div>`;
+  } catch (e) {
+    tBox.innerHTML = '<div class="muted">خطأ: ' + esc(e.message) + '</div>';
+    cBox.innerHTML = '';
+    toast(e.message, false);
+  }
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeDay').classList.toggle('on', m === 'day');
+  document.getElementById('modeAll').classList.toggle('on', m === 'all');
+  render();
+}
+
+function onDate(v) {
+  if (!v) return;
+  curDate = v;
+  render();
+}
+
+function shift(n) {
+  curDate = addDays(curDate || todayISO(), n);
+  document.getElementById('tDate').value = curDate;
+  render();
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+}
+
+(async function init() {
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  curDate = todayISO();
+  document.getElementById('tDate').value = curDate;
+  try {
+    recvList = (await call('getReceivers')) || [];
+    reps = (await call('getReps')) || [];
+  } catch (e) {
+    toast('تعذر تحميل البيانات: ' + e.message, false);
+  }
+  render();
+})();
+</script>
+</body>
+</html>
