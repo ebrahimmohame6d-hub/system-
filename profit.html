@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أرباح الشركة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f8; --surface:#ffffff; --surface2:#f4f6fc; --ink:#1b2140; --muted:#5b6485; --line:#e3e7f3;
+  --p1:#4f46e5; --p2:#7c3aed; --bad:#ef4444; --ok:#10b981;
+  --shadow:0 4px 18px rgba(79,70,229,.08);
+}
+[data-theme="dark"]{
+  --bg:#0d1125; --surface:#161b37; --surface2:#1d2346; --ink:#f1f3ff; --muted:#b4bde3; --line:#2a3160;
+  --shadow:0 4px 18px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Cairo',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);transition:background .3s,color .3s}
+header{
+  display:flex;align-items:center;justify-content:space-between;padding:16px 20px;color:#fff;
+  background:linear-gradient(120deg,#10b981,#0ea5e9,#6366f1);background-size:300% 300%;
+  box-shadow:0 6px 24px rgba(16,185,129,.3);animation:shimmer 10s ease infinite;
+}
+header h1{margin:0;font-size:21px;font-weight:800;animation:fadeUp .5s both}
+.hbtn{
+  height:40px;padding:0 14px;border-radius:12px;border:0;cursor:pointer;background:rgba(255,255,255,.2);
+  color:#fff;font-family:inherit;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:transform .2s,background .2s;
+}
+.hbtn:hover{transform:translateY(-2px);background:rgba(255,255,255,.32)}
+.theme{width:40px;padding:0;justify-content:center;font-size:18px}
+.theme.spin{animation:spinOnce .6s ease}
+
+.wrap{max-width:1040px;margin:20px auto;padding:0 14px;display:flex;gap:16px;align-items:flex-start}
+main.content{flex:1;min-width:0;max-width:840px}
+.side{
+  width:200px;flex-shrink:0;position:sticky;top:16px;display:flex;flex-direction:column;gap:8px;
+  padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);animation:fadeUp .5s both;
+}
+.side-title{font-weight:800;color:var(--muted);font-size:13px;padding:0 4px 4px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:0;cursor:pointer;
+  color:var(--ink);text-decoration:none;font-family:inherit;font-weight:800;font-size:15px;text-align:right;
+  background:var(--surface2);transition:transform .2s,background .2s,box-shadow .2s;
+}
+.nav-item:hover{transform:translateX(-4px);background:linear-gradient(90deg,rgba(79,70,229,.14),rgba(124,58,237,.05))}
+.nav-item.on{background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff;box-shadow:0 8px 20px rgba(16,185,129,.3)}
+.nav-item .ni{font-size:18px;display:inline-block;animation:floatY 3s ease-in-out infinite}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+  padding:18px;margin-bottom:14px;animation:fadeUp .45s both;transition:transform .25s,box-shadow .25s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(79,70,229,.14)}
+.ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ctrl input[type=date]{
+  flex:1;min-width:160px;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);
+  border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;color-scheme:light;
+}
+[data-theme="dark"] .ctrl input[type=date]{color-scheme:dark}
+.btn{
+  padding:11px 16px;border:0;border-radius:12px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;
+  color:#fff;background:linear-gradient(135deg,var(--p1),var(--p2));transition:transform .2s,filter .2s;
+}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{
+  border:0;background:transparent;padding:8px 12px;border-radius:9px;font-family:inherit;font-size:14px;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:background .25s,color .25s;
+}
+.seg button.on{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
+.muted{color:var(--muted);font-weight:700;font-size:14px}
+
+/* الكروت الكبيرة */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{
+  position:relative;overflow:hidden;color:#fff;border-radius:16px;padding:16px;font-weight:700;font-size:13px;
+  box-shadow:0 10px 24px rgba(0,0,0,.14);animation:pop .55s both;transition:transform .3s,box-shadow .3s;
+}
+.stat:hover{transform:translateY(-4px) scale(1.02)}
+.stat b{display:block;margin-top:6px;font-size:24px;font-weight:800;font-family:Consolas,'Courier New',monospace}
+.s-oz{background:linear-gradient(135deg,#0284c7,#0ea5e9,#22d3ee)}
+.s-tl{background:linear-gradient(135deg,#7c3aed,#a855f7,#d946ef)}
+.s-mq{background:linear-gradient(135deg,#ea580c,#f97316,#fbbf24)}
+.s-all{background:linear-gradient(135deg,#059669,#10b981,#34d399)}
+
+.sec{font-weight:800;font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.sec::before{content:"";width:6px;height:20px;border-radius:4px;background:linear-gradient(var(--p1),var(--p2))}
+.tscroll{overflow-x:auto;border-radius:14px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;min-width:460px}
+th{background:linear-gradient(90deg,rgba(79,70,229,.12),rgba(124,58,237,.06));font-weight:800;padding:11px;text-align:center;white-space:nowrap}
+td{padding:12px 10px;text-align:center;font-weight:700;border-top:1px solid var(--line);animation:rowIn .45s both}
+tbody tr:hover td{background:rgba(79,70,229,.06)}
+td.name{text-align:right}
+.num{font-family:Consolas,'Courier New',monospace}
+.neg{color:var(--bad)!important}
+.tot td{background:linear-gradient(90deg,rgba(79,70,229,.14),var(--surface2));font-weight:800}
+
+/* ربح الشركة الإجمالي */
+.big{
+  margin-top:14px;padding:22px;border-radius:18px;color:#fff;display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(135deg,#059669,#10b981,#14b8a6);background-size:200% 200%;animation:shimmer 6s ease infinite;
+  box-shadow:0 14px 30px rgba(16,185,129,.35);
+}
+.big b{font-size:34px;font-family:Consolas,'Courier New',monospace;animation:pop .6s both}
+.big span{font-size:18px;font-weight:800}
+
+.co-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.co{
+  border-radius:16px;padding:16px;color:#fff;box-shadow:0 10px 24px rgba(0,0,0,.14);animation:pop .55s both;
+}
+.co h3{margin:0 0 6px;font-size:17px;font-weight:800}
+.co .sub{font-size:12px;opacity:.9;font-weight:700;margin-bottom:8px}
+.co .pv{font-family:Consolas,'Courier New',monospace;font-size:22px;font-weight:800}
+
+#toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 14px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;box-shadow:0 10px 24px rgba(0,0,0,.25);animation:toastIn .4s cubic-bezier(.2,.9,.3,1.2)}
+.toast.ok{background:linear-gradient(135deg,#059669,#10b981)}
+.toast.err{background:linear-gradient(135deg,#dc2626,#f97316)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes spinOnce{to{transform:rotate(360deg)}}
+
+@media(max-width:760px){
+  .wrap{flex-direction:column;margin-top:12px}
+  main.content{max-width:none;width:100%}
+  .side{width:100%;position:static;flex-direction:row;flex-wrap:wrap;padding:10px}
+  .side-title{display:none}
+  .nav-item{flex:1 1 auto;justify-content:center;padding:10px 8px;font-size:14px}
+  .stats{grid-template-columns:1fr 1fr}
+  .co-cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📈 أرباح الشركة</h1>
+  <button class="hbtn theme" id="themeBtn" onclick="toggleTheme(this)" title="تبديل الوضع">🌙</button>
+</header>
+
+<div id="toasts"></div>
+
+<div class="wrap">
+  <aside class="side">
+    <div class="side-title">القايمة</div>
+    <a class="nav-item" href="index.html"><span class="ni">📊</span> حسابات المناديب</a>
+    <a class="nav-item" href="manage.html"><span class="ni">👥</span> المناديب</a>
+    <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
+    <a class="nav-item on" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
+  </aside>
+
+  <main class="content">
+    <div class="card">
+      <div class="ctrl">
+        <button class="btn" onclick="shift(1)">‹ التالي</button>
+        <input type="date" id="pDate" onchange="onDate(this.value)">
+        <button class="btn" onclick="shift(-1)">السابق ›</button>
+      </div>
+      <div class="ctrl" style="margin-top:12px;justify-content:space-between">
+        <div class="seg">
+          <button id="modeDay" class="on" onclick="setMode('day')">يوم واحد</button>
+          <button id="modeAll" onclick="setMode('all')">كل الأيام</button>
+        </div>
+        <div id="scopeLabel" class="muted"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">ملخص الشحنات حسب الشركة</h2>
+      <div id="coCards" class="co-cards"></div>
+      <div class="big">
+        <span>ربح الشركة الإجمالي</span>
+        <b id="grandProfit">0</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">تفصيل كل شركة (داخل وخارج الزون)</h2>
+      <div id="coTable"><div class="muted">جاري التحميل...</div></div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">ربح الشركة من كل مندوب</h2>
+      <div id="repTable"><div class="muted">جاري التحميل...</div></div>
+    </div>
+  </main>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
+
+const CO_COLORS = {
+  oz: 's-oz', tl: 's-tl', mq: 's-mq'
+};
+
+let cfg = null;
+let mode = 'day';
+let curDate = '';
+
+function call(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const qs = new URLSearchParams({ ...params, action, callback: cbName });
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('انتهت مهلة الاتصال، جرب تاني')); }, 20000);
+    function cleanup() { clearTimeout(timer); delete window[cbName]; script.remove(); }
+    window[cbName] = res => {
+      cleanup();
+      if (res && res.ok) resolve(res.data);
+      else reject(new Error((res && res.error) || 'حصل خطأ'));
+    };
+    script.onerror = () => { cleanup(); reject(new Error('فشل الاتصال بالسيرفر')); };
+    script.src = API_URL + '?' + qs.toString();
+    document.body.appendChild(script);
+  });
+}
+
+function fmt(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function pad(n) { return String(n).padStart(2, '0'); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+function addDays(iso, n) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const x = new Date(y, m - 1, d + n);
+  return x.getFullYear() + '-' + pad(x.getMonth()+1) + '-' + pad(x.getDate());
+}
+function dmy(iso) {
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[3] + '/' + m[2] + '/' + m[1] : esc(iso);
+}
+
+function paintThemeBtn(theme) { const b = document.getElementById('themeBtn'); if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙'; }
+function toggleTheme(btn) {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  paintThemeBtn(next);
+  if (btn) { btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin'); }
+}
+
+function toast(text, ok) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.textContent = text;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+}
+
+async function collectRows() {
+  if (mode === 'day') {
+    const rows = await call('getDay', { date: curDate });
+    return { rows: rows || [], days: rows ? 1 : 0 };
+  }
+  const days = (await call('listDays')) || [];
+  const results = await Promise.all(days.map(d => call('getDay', { date: d }).catch(() => null)));
+  let all = [], n = 0;
+  results.forEach(r => { if (r) { all = all.concat(r); n++; } });
+  return { rows: all, days: n };
+}
+
+// يحسب ربح كل شركة ومندوب: (سعر الشركة − عمولة المندوب للشحنة) × عدد الشحنات
+function compute(rows) {
+  const CO = cfg.keys;
+  const co = {};
+  CO.forEach(k => { co[k] = { inN: 0, inP: 0, outN: 0, outP: 0 }; });
+  const reps = {};
+
+  rows.forEach(r => {
+    const rate = r.count > 0 ? r.commission / r.count : 0;
+    if (!reps[r.rep]) reps[r.rep] = { n: 0, p: 0 };
+    CO.forEach(k => {
+      const zi = Number(r.zin[k]) || 0;
+      const zo = Number(r.zout[k]) || 0;
+      const pi = zi * (cfg.prices.inZone[k] - rate);
+      const po = zo * (cfg.prices.outZone[k] - rate);
+      co[k].inN += zi; co[k].inP += pi;
+      co[k].outN += zo; co[k].outP += po;
+      reps[r.rep].n += zi + zo;
+      reps[r.rep].p += pi + po;
+    });
+  });
+  return { co, reps };
+}
+
+function signCls(v) { return v < 0 ? ' neg' : ''; }
+
+async function render() {
+  const coCards = document.getElementById('coCards');
+  const coTable = document.getElementById('coTable');
+  const repTable = document.getElementById('repTable');
+  coTable.innerHTML = '<div class="muted">جاري التحميل...</div>';
+  repTable.innerHTML = '<div class="muted">جاري التحميل...</div>';
+
+  try {
+    if (!cfg) cfg = await call('getPrices');
+    const { rows, days } = await collectRows();
+    const { co, reps } = compute(rows);
+    const CO = cfg.keys;
+
+    document.getElementById('scopeLabel').textContent = mode === 'day'
+      ? 'يوم ' + dmy(curDate) + (days ? '' : ' (مفيش بيانات محفوظة)')
+      : 'كل الأيام المحفوظة (' + days + ' يوم)';
+
+    let grand = 0;
+    CO.forEach(k => { grand += co[k].inP + co[k].outP; });
+
+    // كروت الشركات
+    coCards.innerHTML = CO.map((k, idx) => {
+      const n = co[k].inN + co[k].outN;
+      const p = co[k].inP + co[k].outP;
+      const cls = ['s-oz', 's-tl', 's-mq'][idx];
+      return `<div class="co ${cls}">
+        <h3>${esc(cfg.names[k])}</h3>
+        <div class="sub">داخل: ${co[k].inN} شحنة | خارج: ${co[k].outN} شحنة</div>
+        <div class="pv">${fmt(p)}</div>
+        <div class="sub">إجمالي شحنات: ${n}</div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('grandProfit').textContent = fmt(grand);
+
+    // جدول تفصيل الشركات
+    const coRows = CO.map(k => {
+      const inN = co[k].inN, outN = co[k].outN;
+      const inP = co[k].inP, outP = co[k].outP;
+      return `<tr>
+        <td class="name">${esc(cfg.names[k])}</td>
+        <td class="num">${inN}</td>
+        <td class="num${signCls(inP)}">${fmt(inP)}</td>
+        <td class="num">${outN}</td>
+        <td class="num${signCls(outP)}">${fmt(outP)}</td>
+        <td class="num">${inN + outN}</td>
+        <td class="num${signCls(inP + outP)}">${fmt(inP + outP)}</td>
+      </tr>`;
+    }).join('');
+    const totIn = CO.reduce((a, k) => a + co[k].inN, 0);
+    const totInP = CO.reduce((a, k) => a + co[k].inP, 0);
+    const totOut = CO.reduce((a, k) => a + co[k].outN, 0);
+    const totOutP = CO.reduce((a, k) => a + co[k].outP, 0);
+    coTable.innerHTML = `<div class="tscroll"><table>
+      <thead><tr><th>الشركة</th><th>داخل: عدد</th><th>داخل: ربح</th><th>خارج: عدد</th><th>خارج: ربح</th><th>الإجمالي: عدد</th><th>الإجمالي: ربح</th></tr></thead>
+      <tbody>${coRows}
+        <tr class="tot"><td class="name">الإجمالي</td>
+          <td class="num">${totIn}</td><td class="num">${fmt(totInP)}</td>
+          <td class="num">${totOut}</td><td class="num">${fmt(totOutP)}</td>
+          <td class="num">${totIn + totOut}</td><td class="num">${fmt(totInP + totOutP)}</td>
+        </tr>
+      </tbody></table></div>`;
+
+    // جدول المناديب
+    const repList = Object.keys(reps).map(n => ({ name: n, n: reps[n].n, p: reps[n].p }))
+      .sort((a, b) => b.p - a.p);
+    if (!repList.length) {
+      repTable.innerHTML = '<div class="muted">مفيش بيانات</div>';
+    } else {
+      const body = repList.map(r => `<tr>
+        <td class="name">${esc(r.name)}</td>
+        <td class="num">${r.n}</td>
+        <td class="num${signCls(r.p)}">${fmt(r.p)}</td>
+      </tr>`).join('');
+      repTable.innerHTML = `<div class="tscroll"><table>
+        <thead><tr><th>المندوب</th><th>عدد الشحنات (داخل + خارج)</th><th>ربح الشركة</th></tr></thead>
+        <tbody>${body}
+          <tr class="tot"><td class="name">الإجمالي</td>
+            <td class="num">${repList.reduce((a, r) => a + r.n, 0)}</td>
+            <td class="num">${fmt(grand)}</td></tr>
+        </tbody></table></div>`;
+    }
+  } catch (e) {
+    coTable.innerHTML = '<div class="muted">خطأ: ' + esc(e.message) + '</div>';
+    repTable.innerHTML = '';
+    toast(e.message, false);
+  }
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeDay').classList.toggle('on', m === 'day');
+  document.getElementById('modeAll').classList.toggle('on', m === 'all');
+  render();
+}
+
+function onDate(v) { if (!v) return; curDate = v; render(); }
+
+function shift(n) {
+  curDate = addDays(curDate || todayISO(), n);
+  document.getElementById('pDate').value = curDate;
+  render();
+}
+
+(async function init() {
+  const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = dark ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  paintThemeBtn(theme);
+  curDate = todayISO();
+  document.getElementById('pDate').value = curDate;
+  render();
+})();
+</script>
+</body>
+</html>
