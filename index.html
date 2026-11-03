@@ -64,6 +64,16 @@ main.content{flex:1;min-width:0;max-width:760px}
 }
 .card.open{z-index:30}
 .card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(79,70,229,.14)}
+#list .card:nth-child(1){animation-delay:.05s}
+#list .card:nth-child(2){animation-delay:.1s}
+#list .card:nth-child(3){animation-delay:.15s}
+#list .card:nth-child(4){animation-delay:.2s}
+#list .card:nth-child(5){animation-delay:.25s}
+#list .card:nth-child(6){animation-delay:.3s}
+#list .card:nth-child(7){animation-delay:.35s}
+#list .card:nth-child(8){animation-delay:.4s}
+#list .card:nth-child(9){animation-delay:.45s}
+#list .card:nth-child(10){animation-delay:.5s}
 
 input,select{
   width:100%;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);
@@ -144,12 +154,13 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
 
-/* الشحنات حسب الزون */
+/* الزون: للأرباح بس */
 .zone{margin-top:14px;padding:12px;border-radius:14px;background:var(--surface2);border:1px dashed var(--line)}
 .zone.out{background:rgba(124,58,237,.06)}
 .zt{font-weight:800;font-size:14px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .g3 label{font-size:12px}
+.hint{font-size:12px;color:var(--muted);font-weight:700;margin-top:8px}
 
 /* الباقي */
 .rembox{
@@ -258,8 +269,8 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcok
 const ZK = ['zi_oz','zi_tl','zi_mq','zo_oz','zo_tl','zo_mq'];
 const ZL = { oz: 'اوت زون', tl: 'تلا', mq: 'مصطفي Q' };
 const BLANK = () => ({
-  total:'', cash:'', insta:'', instaRecv:'', voda:'', vodaRecv:'',
-  zi_oz:'', zi_tl:'', zi_mq:'', zo_oz:'', zo_tl:'', zo_mq:'', lcount:''
+  total:'', count:'', cash:'', insta:'', instaRecv:'', voda:'', vodaRecv:'',
+  zi_oz:'', zi_tl:'', zi_mq:'', zo_oz:'', zo_tl:'', zo_mq:''
 });
 
 let reps = [];
@@ -379,7 +390,6 @@ function pickDd(item) {
   root.classList.toggle('empty', v === '');
   root.querySelectorAll('.dd-item').forEach(x => x.classList.toggle('sel', x === item && v !== ''));
   root.classList.remove('open');
-
   if (root.dataset.key) {
     const i = Number(root.dataset.i);
     state[reps[i].name][root.dataset.key] = v;
@@ -413,14 +423,13 @@ document.addEventListener('keydown', e => {
 });
 
 // ---------- الحسابات ----------
+// عدد الشحنات بيتكتب بإيدك، والعمولة = العدد × عمولة المندوب.
+// الزون بيتسجل للأرباح بس ومابيأثرش على العدد ولا على الباقي.
 
-// عدد الشحنات = مجموع التقسيم (داخل + خارج). لو مفيش تقسيم (يوم قديم) بنستخدم العدد المحفوظ
 function calcOf(name) {
   const s = state[name];
-  const bsum = ZK.reduce((a, k) => a + (Number(s[k]) || 0), 0);
-  const count = bsum > 0 ? bsum : (Number(s.lcount) || 0);
-  const rate = rateOf(name);
-  const commission = count * rate;
+  const count = Number(s.count) || 0;
+  const commission = count * rateOf(name);
   const total = Number(s.total) || 0;
   const net = total - commission;
   const paid = (Number(s.cash) || 0) + (Number(s.insta) || 0) + (Number(s.voda) || 0);
@@ -470,7 +479,7 @@ function render() {
           </div>
           <div>
             <label>عدد الشحنات</label>
-            <input type="text" id="cnt-${i}" readonly value="${c.count}">
+            <input type="number" inputmode="numeric" min="0" data-i="${i}" data-key="count" value="${sv(s.count)}">
           </div>
           <div>
             <label>العمولة</label>
@@ -490,6 +499,7 @@ function render() {
           <div class="zt">🚚 خارج الزون</div>
           <div class="g3">${zoneInputs(i, 'zo')}</div>
         </div>
+        <div class="hint">الزون بيتحسب للأرباح بس، وعدد الشحنات فوق هو اللي بيتحسب منه العمولة.</div>
 
         <div class="grid" style="margin-top:14px">
           <div class="full">
@@ -523,7 +533,6 @@ function render() {
 
 function updSummary(i) {
   const c = calcOf(reps[i].name);
-  $('cnt-' + i).value = c.count;
   $('comm-' + i).value = fmt(c.commission);
   $('net-' + i).textContent = fmt(c.net);
   const rb = $('rem-' + i);
@@ -623,12 +632,11 @@ async function loadDay() {
       rows.forEach(r => {
         if (!state[r.rep]) return;
         state[r.rep] = {
-          total: sv(r.total), cash: sv(r.cash),
+          total: sv(r.total), count: sv(r.count), cash: sv(r.cash),
           insta: sv(r.insta), instaRecv: r.instaRecv || '',
           voda: sv(r.voda), vodaRecv: r.vodaRecv || '',
           zi_oz: sv(r.zin.oz), zi_tl: sv(r.zin.tl), zi_mq: sv(r.zin.mq),
-          zo_oz: sv(r.zout.oz), zo_tl: sv(r.zout.tl), zo_mq: sv(r.zout.mq),
-          lcount: sv(r.count)
+          zo_oz: sv(r.zout.oz), zo_tl: sv(r.zout.tl), zo_mq: sv(r.zout.mq)
         };
       });
     }
