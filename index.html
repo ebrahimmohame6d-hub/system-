@@ -154,13 +154,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
 
-/* الزون: للأرباح بس */
+/* الزون */
 .zone{margin-top:14px;padding:12px;border-radius:14px;background:var(--surface2);border:1px dashed var(--line)}
 .zone.out{background:rgba(124,58,237,.06)}
 .zt{font-weight:800;font-size:14px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .g3 label{font-size:12px}
-.hint{font-size:12px;color:var(--muted);font-weight:700;margin-top:8px}
 
 /* الباقي */
 .rembox{
@@ -266,10 +265,9 @@ label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bot
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-const ZK = ['zi_oz','zi_tl','zi_mq','zo_oz','zo_tl','zo_mq'];
 const ZL = { oz: 'اوت زون', tl: 'تلا', mq: 'مصطفي Q' };
 const BLANK = () => ({
-  total:'', count:'', cash:'', insta:'', instaRecv:'', voda:'', vodaRecv:'',
+  total:'', insta:'', instaRecv:'', voda:'', vodaRecv:'', cash:'',
   zi_oz:'', zi_tl:'', zi_mq:'', zo_oz:'', zo_tl:'', zo_mq:''
 });
 
@@ -394,7 +392,6 @@ function pickDd(item) {
     const i = Number(root.dataset.i);
     state[reps[i].name][root.dataset.key] = v;
     dirty = true;
-    updSummary(i);
   } else if (root.id === 'savedDays') {
     goDate(v);
   }
@@ -423,12 +420,16 @@ document.addEventListener('keydown', e => {
 });
 
 // ---------- الحسابات ----------
-// عدد الشحنات بيتكتب بإيدك، والعمولة = العدد × عمولة المندوب.
-// الزون بيتسجل للأرباح بس ومابيأثرش على العدد ولا على الباقي.
+// عدد الشحنات = مجموع خانات داخل وخارج الزون (بيتحسب تلقائي)
+// العمولة = العدد × عمولة المندوب
+
+function zoneSum(s) {
+  return ['zi_oz','zi_tl','zi_mq','zo_oz','zo_tl','zo_mq'].reduce((a, k) => a + (Number(s[k]) || 0), 0);
+}
 
 function calcOf(name) {
   const s = state[name];
-  const count = Number(s.count) || 0;
+  const count = zoneSum(s);
   const commission = count * rateOf(name);
   const total = Number(s.total) || 0;
   const net = total - commission;
@@ -456,8 +457,7 @@ function zoneInputs(i, prefix) {
 }
 
 function render() {
-  const list = $('list');
-  list.innerHTML = reps.map((r, i) => {
+  $('list').innerHTML = reps.map((r, i) => {
     const name = r.name;
     const s = state[name];
     const c = calcOf(name);
@@ -479,7 +479,7 @@ function render() {
           </div>
           <div>
             <label>عدد الشحنات</label>
-            <input type="number" inputmode="numeric" min="0" data-i="${i}" data-key="count" value="${sv(s.count)}">
+            <input type="text" id="cnt-${i}" readonly value="${c.count}">
           </div>
           <div>
             <label>العمولة</label>
@@ -499,7 +499,6 @@ function render() {
           <div class="zt">🚚 خارج الزون</div>
           <div class="g3">${zoneInputs(i, 'zo')}</div>
         </div>
-        <div class="hint">الزون بيتحسب للأرباح بس، وعدد الشحنات فوق هو اللي بيتحسب منه العمولة.</div>
 
         <div class="grid" style="margin-top:14px">
           <div class="full">
@@ -533,6 +532,7 @@ function render() {
 
 function updSummary(i) {
   const c = calcOf(reps[i].name);
+  $('cnt-' + i).value = c.count;
   $('comm-' + i).value = fmt(c.commission);
   $('net-' + i).textContent = fmt(c.net);
   const rb = $('rem-' + i);
@@ -562,29 +562,7 @@ listEl.addEventListener('input', e => {
   updSummary(i);
 });
 
-// ---------- الأيام ----------
-
-function renderSavedDays() {
-  const opts = [{ v: '', l: '-- أيام محفوظة قبل كده --' }].concat(savedDaysList.map(d => ({ v: d, l: dmy(d) })));
-  const value = savedDaysList.includes(currentDate) ? currentDate : '';
-  $('savedDaysWrap').innerHTML = ddHTML(opts, value, '-- أيام محفوظة قبل كده --', 'id="savedDays"');
-}
-
-function setDateUI(date) {
-  $('dDate').value = date;
-  $('dLabel').textContent = 'حسابات يوم ' + dmy(date);
-  setDdValue('savedDays', savedDaysList.includes(date) ? date : '');
-}
-
-function goDate(date) {
-  if (!date) return;
-  if (dirty && !confirm('فيه تعديلات مش متحفوظة، متأكد إنك عايز تغير اليوم؟')) { setDateUI(currentDate); return; }
-  currentDate = date;
-  setDateUI(date);
-  loadDay();
-}
-
-function shiftDay(n) { goDate(addDays(currentDate || todayISO(), n)); }
+// ---------- المستلمين ----------
 
 async function loadRecv() { recvList = (await call('getReceivers')) || []; }
 
@@ -615,6 +593,30 @@ async function delRecv(name) {
   } catch (e) { toast(e.message, false); }
 }
 
+// ---------- الأيام ----------
+
+function renderSavedDays() {
+  const opts = [{ v: '', l: '-- أيام محفوظة قبل كده --' }].concat(savedDaysList.map(d => ({ v: d, l: dmy(d) })));
+  const value = savedDaysList.includes(currentDate) ? currentDate : '';
+  $('savedDaysWrap').innerHTML = ddHTML(opts, value, '-- أيام محفوظة قبل كده --', 'id="savedDays"');
+}
+
+function setDateUI(date) {
+  $('dDate').value = date;
+  $('dLabel').textContent = 'حسابات يوم ' + dmy(date);
+  setDdValue('savedDays', savedDaysList.includes(date) ? date : '');
+}
+
+function goDate(date) {
+  if (!date) return;
+  if (dirty && !confirm('فيه تعديلات مش متحفوظة، متأكد إنك عايز تغير اليوم؟')) { setDateUI(currentDate); return; }
+  currentDate = date;
+  setDateUI(date);
+  loadDay();
+}
+
+function shiftDay(n) { goDate(addDays(currentDate || todayISO(), n)); }
+
 async function loadReps() { reps = (await call('getReps')) || []; ensureState(); }
 
 async function loadDay() {
@@ -632,7 +634,7 @@ async function loadDay() {
       rows.forEach(r => {
         if (!state[r.rep]) return;
         state[r.rep] = {
-          total: sv(r.total), count: sv(r.count), cash: sv(r.cash),
+          total: sv(r.total), cash: sv(r.cash),
           insta: sv(r.insta), instaRecv: r.instaRecv || '',
           voda: sv(r.voda), vodaRecv: r.vodaRecv || '',
           zi_oz: sv(r.zin.oz), zi_tl: sv(r.zin.tl), zi_mq: sv(r.zin.mq),
