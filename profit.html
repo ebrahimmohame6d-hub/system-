@@ -88,7 +88,6 @@ main.content{flex:1;min-width:0;max-width:840px}
 .s-tl{background:linear-gradient(135deg,#7c3aed,#a855f7,#d946ef)}
 .s-mq{background:linear-gradient(135deg,#ea580c,#f97316,#fbbf24)}
 
-/* ربح الشركة الإجمالي */
 .big{
   margin-top:4px;padding:20px 22px;border-radius:18px;color:#fff;display:flex;justify-content:space-between;align-items:center;
   background:linear-gradient(135deg,#059669,#10b981,#14b8a6);background-size:200% 200%;animation:shimmer 6s ease infinite;
@@ -97,18 +96,17 @@ main.content{flex:1;min-width:0;max-width:840px}
 .big span{font-size:18px;font-weight:800}
 .big b{font-size:34px;font-family:Consolas,'Courier New',monospace;animation:pop .6s both}
 
-/* الجداول */
-.tscroll{overflow-x:auto;border-radius:16px;border:1px solid var(--line)}
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;min-width:480px}
+/* جدول موحّد: بدون خطوط فاصلة بين الجداول */
+.tbl-box{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:480px}
 thead th{
   background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:800;padding:13px 10px;
   text-align:center;white-space:nowrap;font-size:14px;
 }
-thead th:first-child{border-top-right-radius:16px}
-thead th:last-child{border-top-left-radius:16px}
 tbody td{
-  padding:13px 10px;text-align:center;font-weight:700;border-top:1px solid var(--line);
-  background:var(--surface);animation:rowIn .5s both;transition:background .2s;
+  padding:13px 10px;text-align:center;font-weight:700;background:var(--surface);
+  animation:rowIn .5s both;transition:background .2s;border:none;
 }
 tbody tr:nth-child(1) td{animation-delay:.05s}
 tbody tr:nth-child(2) td{animation-delay:.12s}
@@ -122,17 +120,13 @@ td.name{text-align:right;font-weight:800}
 .dot.oz{background:#0ea5e9}
 .dot.tl{background:#a855f7}
 .dot.mq{background:#f97316}
-.num{font-family:Consolas,'Courier New',monospace;font-size:15px}
 .pill{
   display:inline-block;min-width:44px;padding:4px 10px;border-radius:999px;font-family:Consolas,'Courier New',monospace;
   font-weight:800;background:rgba(79,70,229,.1);color:var(--p1);
 }
 .pill.pos{background:rgba(16,185,129,.14);color:#059669}
 .pill.neg{background:rgba(239,68,68,.14);color:var(--bad)}
-.zero{color:var(--muted);font-weight:600}
-tr.tot td{background:linear-gradient(90deg,rgba(79,70,229,.14),var(--surface2));font-weight:800;border-top:2px solid var(--line)}
-tr.tot td:first-child{border-bottom-right-radius:16px}
-tr.tot td:last-child{border-bottom-left-radius:16px}
+tr.tot td{background:linear-gradient(90deg,rgba(79,70,229,.14),var(--surface2));font-weight:800}
 
 /* شريط نسبة الربح لكل مندوب */
 .bar{height:8px;border-radius:999px;background:var(--surface2);overflow:hidden;margin-top:6px;min-width:80px}
@@ -207,12 +201,12 @@ tr.tot td:last-child{border-bottom-left-radius:16px}
 
     <div class="card">
       <h2 class="sec">تفصيل كل شركة (داخل وخارج الزون)</h2>
-      <div id="coTable"><div class="muted">جاري التحميل...</div></div>
+      <div class="tbl-box"><div id="coTable" class="tscroll"><div class="muted" style="padding:14px">جاري التحميل...</div></div></div>
     </div>
 
     <div class="card">
       <h2 class="sec">ربح الشركة من كل مندوب</h2>
-      <div id="repTable"><div class="muted">جاري التحميل...</div></div>
+      <div class="tbl-box"><div id="repTable" class="tscroll"><div class="muted" style="padding:14px">جاري التحميل...</div></div></div>
     </div>
   </main>
 </div>
@@ -288,7 +282,6 @@ async function collectRows() {
   return { rows: all, days: n };
 }
 
-// ربح الشركة = مجموع (سعر الشركة − عمولة المندوب للشحنة) × عدد الشحنات في كل خانة
 function compute(rows) {
   const CO = cfg.keys;
   const co = {};
@@ -312,15 +305,14 @@ function compute(rows) {
   return { co, reps };
 }
 
-function signCls(v) { return v < 0 ? ' neg' : ''; }
 function pillCls(v) { return v < 0 ? 'pill neg' : v > 0 ? 'pill pos' : 'pill'; }
 
 async function render() {
   const coCards = document.getElementById('coCards');
   const coTable = document.getElementById('coTable');
   const repTable = document.getElementById('repTable');
-  coTable.innerHTML = '<div class="muted">جاري التحميل...</div>';
-  repTable.innerHTML = '<div class="muted">جاري التحميل...</div>';
+  coTable.innerHTML = '<div class="muted" style="padding:14px">جاري التحميل...</div>';
+  repTable.innerHTML = '<div class="muted" style="padding:14px">جاري التحميل...</div>';
 
   try {
     if (!cfg) cfg = await call('getPrices');
@@ -372,7 +364,7 @@ async function render() {
     const totOut = CO.reduce((a, k) => a + co[k].outN, 0);
     const totOutP = CO.reduce((a, k) => a + co[k].outP, 0);
 
-    coTable.innerHTML = `<div class="tscroll"><table>
+    coTable.innerHTML = `<table>
       <thead><tr>
         <th>الشركة</th><th>داخل: عدد</th><th>داخل: ربح</th><th>خارج: عدد</th><th>خارج: ربح</th><th>الإجمالي: عدد</th><th>الإجمالي: ربح</th>
       </tr></thead>
@@ -383,11 +375,11 @@ async function render() {
           <td><span class="pill">${totOut}</span></td><td><span class="${pillCls(totOutP)}">${fmt(totOutP)}</span></td>
           <td><span class="pill">${totIn + totOut}</span></td><td><span class="${pillCls(totInP + totOutP)}">${fmt(totInP + totOutP)}</span></td>
         </tr>
-      </tbody></table></div>`;
+      </tbody></table>`;
 
     const repList = Object.keys(reps).map(n => ({ name: n, n: reps[n].n, p: reps[n].p })).sort((a, b) => b.p - a.p);
     if (!repList.length) {
-      repTable.innerHTML = '<div class="muted">مفيش بيانات</div>';
+      repTable.innerHTML = '<div class="muted" style="padding:14px">مفيش بيانات</div>';
     } else {
       const maxP = Math.max(...repList.map(r => Math.abs(r.p)), 1);
       const body = repList.map(r => `<tr>
@@ -398,7 +390,7 @@ async function render() {
           <div class="bar"><i style="width:${Math.round(Math.abs(r.p) / maxP * 100)}%"></i></div>
         </td>
       </tr>`).join('');
-      repTable.innerHTML = `<div class="tscroll"><table>
+      repTable.innerHTML = `<table>
         <thead><tr><th>المندوب</th><th>عدد الشحنات (داخل + خارج)</th><th>ربح الشركة</th></tr></thead>
         <tbody>${body}
           <tr class="tot">
@@ -406,10 +398,10 @@ async function render() {
             <td><span class="pill">${repList.reduce((a, r) => a + r.n, 0)}</span></td>
             <td><span class="${pillCls(grand)}">${fmt(grand)}</span></td>
           </tr>
-        </tbody></table></div>`;
+        </tbody></table>`;
     }
   } catch (e) {
-    coTable.innerHTML = '<div class="muted">خطأ: ' + esc(e.message) + '</div>';
+    coTable.innerHTML = '<div class="muted" style="padding:14px">خطأ: ' + esc(e.message) + '</div>';
     repTable.innerHTML = '';
     toast(e.message, false);
   }
