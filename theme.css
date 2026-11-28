@@ -81,6 +81,7 @@ main.content{flex:1;min-width:0;max-width:780px}
 .card:hover{transform:translateY(-2px)}
 .card.open{z-index:30}
 .card:has(.dd.open){z-index:80;transform:none}
+.list li:has(.dd.open),.edit-drawer:has(.dd.open){position:relative;z-index:50;transform:none}
 .sec{font-weight:800;font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 .sec::before{content:"";width:5px;height:20px;border-radius:4px;background:var(--navy2)}
 h2{margin:0 0 12px;font-size:18px;font-weight:800}
