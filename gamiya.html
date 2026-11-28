@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الجمعية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+  main.content.wide { max-width: 100%; }
+
+  .gm-wrap { border: 1.5px solid #2e6b3e; border-radius: 16px; overflow: hidden; background: var(--surface); }
+  .gm-scroll { overflow-x: auto; max-width: 100%; }
+  .gm-tbl { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 1080px; }
+  .gm-tbl th {
+    background: #2e6b3e;
+    color: #fff;
+    font-weight: 800;
+    padding: 9px 6px;
+    border: 1px solid rgba(255,255,255,.22);
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+  .gm-tbl td {
+    padding: 5px 4px;
+    border: 1px solid var(--line);
+    text-align: center;
+    font-weight: 700;
+    animation: none;
+    transition: background .25s;
+  }
+  .gm-tbl tbody tr:hover td { filter: brightness(.97); }
+
+  .gm-tbl tr.st-received td { background: #d1fae5; color: #064e3b; }
+  .gm-tbl tr.st-turn td { background: #fef3c7; color: #78350f; }
+  [data-theme="dark"] .gm-tbl tr.st-received td { background: rgba(16, 185, 129, .22); color: #d1fae5; }
+  [data-theme="dark"] .gm-tbl tr.st-turn td { background: rgba(245, 158, 11, .22); color: #fef3c7; }
+
+  .gm-tbl .sticky-1 { position: sticky; right: 0; z-index: 3; width: 38px; min-width: 38px; }
+  .gm-tbl .sticky-2 { position: sticky; right: 38px; z-index: 3; min-width: 120px; }
+  .gm-tbl thead .sticky-1, .gm-tbl thead .sticky-2 { z-index: 5; background: #2e6b3e; }
+  .gm-tbl tbody tr:not(.st-received):not(.st-turn) .sticky-1,
+  .gm-tbl tbody tr:not(.st-received):not(.st-turn) .sticky-2 { background: var(--surface); }
+  .gm-tbl tr.st-received .sticky-1, .gm-tbl tr.st-received .sticky-2 { background: #d1fae5; }
+  .gm-tbl tr.st-turn .sticky-1, .gm-tbl tr.st-turn .sticky-2 { background: #fef3c7; }
+  [data-theme="dark"] .gm-tbl tr.st-received .sticky-1,
+  [data-theme="dark"] .gm-tbl tr.st-received .sticky-2 { background: #163b35; }
+  [data-theme="dark"] .gm-tbl tr.st-turn .sticky-1,
+  [data-theme="dark"] .gm-tbl tr.st-turn .sticky-2 { background: #3b311e; }
+
+  .gm-name {
+    width: 100%;
+    min-width: 105px;
+    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font-weight: 800;
+    font-size: 14px;
+    text-align: center;
+  }
+  .gm-name:focus { border-color: #2e6b3e; background: var(--surface); box-shadow: none; }
+
+  .gm-pay {
+    width: 58px;
+    padding: 6px 4px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font-family: Consolas, 'Courier New', monospace;
+    font-weight: 800;
+    font-size: 14px;
+    text-align: center;
+  }
+  .gm-pay:hover { border-color: var(--line); background: rgba(255,255,255,.35); }
+  .gm-pay:focus { border-color: #2e6b3e; background: var(--surface); color: var(--ink); box-shadow: none; }
+
+  .gm-turn-sel {
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    width: auto;
+    min-width: 112px;
+    border: 1.5px solid var(--line);
+    background: var(--surface2);
+    color: var(--ink);
+  }
+  .gm-turn-sel.received { background: #16a34a; color: #fff; border-color: #15803d; }
+  .gm-turn-sel.turn { background: #d97706; color: #fff; border-color: #b45309; }
+
+  .gm-tot td {
+    background: #d9ead3 !important;
+    color: #14532d !important;
+    font-weight: 800;
+    padding: 10px 6px;
+    border-top: 2px solid #2e6b3e;
+  }
+  [data-theme="dark"] .gm-tot td {
+    background: #1c3a2b !important;
+    color: #bbf7d0 !important;
+  }
+  .gm-del-row {
+    border: 0;
+    background: transparent;
+    color: var(--bad);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 5px;
+    border-radius: 6px;
+    opacity: .65;
+  }
+  .gm-del-row:hover { opacity: 1; background: rgba(184,106,106,.18); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🤝 الجمعية</h1>
+  <button class="hbtn theme" id="themeBtn" onclick="toggleTheme(this)" title="تبديل الوضع">🌙</button>
+</header>
+
+<div id="toasts"></div>
+
+<div class="wrap" style="max-width:1360px">
+  <aside class="side">
+    <div class="side-title">القايمة</div>
+    <a class="nav-item" href="index.html"><span class="ni">📊</span> حسابات المناديب</a>
+    <a class="nav-item" href="manage.html"><span class="ni">👥</span> المناديب</a>
+    <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
+    <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
+    <a class="nav-item" href="weekly.html"><span class="ni">🗓️</span> حساب الأسبوعي</a>
+    <a class="nav-item on" href="gamiya.html"><span class="ni">🤝</span> الجمعية</a>
+  </aside>
+
+  <main class="content wide">
+    <div class="card">
+      <div class="stats">
+        <div class="stat s-all">إجمالي الجمعية<b id="stTarget">0</b></div>
+        <div class="stat s-cash">إجمالي المدفوع<b id="stPaid">0</b></div>
+        <div class="stat s-voda">إجمالي المتبقي<b id="stRem">0</b></div>
+        <div class="stat s-insta">عليه الدور حالياً<b id="stTurn" style="font-size:19px">—</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctrl" style="justify-content:space-between">
+        <div class="ctrl">
+          <div>
+            <label>تاريخ البداية</label>
+            <input type="date" id="startDate" style="width:155px" onchange="onSettingsChange()">
+          </div>
+          <div>
+            <label>قيمة اليوم</label>
+            <input type="number" id="dailyAmount" min="1" style="width:105px" onchange="onSettingsChange()">
+          </div>
+          <div>
+            <label>عدد الأيام</label>
+            <input type="number" id="daysCount" min="1" max="31" style="width:95px" onchange="onSettingsChange()">
+          </div>
+        </div>
+
+        <div class="ctrl" style="align-self:flex-end">
+          <button type="button" class="btn" style="padding:10px 14px;font-size:13px" onclick="addSubscriber()">➕ إضافة مشترك</button>
+          <button type="button" class="btn danger" style="padding:10px 14px;font-size:13px" onclick="resetCycle()">🔄 دورة جديدة</button>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:8px;font-size:12px">
+        💡 تلميح: اكتب المبلغ في أي خانة (أو اضغط مرتين على الخانة الفاضية لملء <b id="hintAmt">100</b> تلقائياً) — ولما تختار <b>"تم القبض"</b> لأي اسم، الدور بيتنقل تلقائياً للي بعده.
+      </div>
+    </div>
+
+    <div class="card" style="padding:12px">
+      <div class="gm-wrap">
+        <div class="gm-scroll" id="tableBox">
+          <div class="muted" style="padding:20px">جاري تحميل جدول الجمعية...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="savebar">
+      <button id="btnSave" onclick="saveGamiya()">💾 حفظ الجمعية</button>
+    </div>
+  </main>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
+
+const DEFAULT_NAMES = [
+  'احمد', 'المستكاوي', 'شحاته', 'فروق', 'صابر',
+  'احمد', 'المستكاوي', 'شحاته', 'فروق', 'صابر',
+  'محسن', 'محسن', 'محسن'
+];
+
+let gState = {
+  startDate: '2026-11-22',
+  dailyAmount: 100,
+  daysCount: 10,
+  rows: []
+};
+let dirty = false;
+const $ = id => document.getElementById(id);
+
+function call(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const qs = new URLSearchParams({ ...params, action, callback: cbName });
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('انتهت مهلة الاتصال، جرب تاني')); }, 20000);
+    function cleanup() { clearTimeout(timer); delete window[cbName]; script.remove(); }
+    window[cbName] = res => {
+      cleanup();
+      if (res && res.ok) resolve(res.data);
+      else reject(new Error((res && res.error) || 'حصل خطأ'));
+    };
+    script.onerror = () => { cleanup(); reject(new Error('فشل الاتصال بالسيرفر')); };
+    script.src = API_URL + '?' + qs.toString();
+    document.body.appendChild(script);
+  });
+}
+
+function fmt(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function pad(n) { return String(n).padStart(2, '0'); }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function paintThemeBtn(th) { const b = $('themeBtn'); if (b) b.textContent = th === 'dark' ? '☀️' : '🌙'; }
+function toggleTheme(btn) {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  paintThemeBtn(next);
+  if (btn) { btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin'); }
+}
+function toast(text, ok) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.textContent = text;
+  $('toasts').appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+}
+
+function dayShortDate(startIso, offset) {
+  const parts = String(startIso || '2026-11-22').split('-').map(Number);
+  const d = new Date(parts[0], (parts[1] || 1) - 1, (parts[2] || 1) + offset);
+  return pad(d.getDate()) + '-' + pad(d.getMonth() + 1);
+}
+
+function ensureRowsStructure() {
+  const days = Math.max(1, Math.min(31, Number(gState.daysCount) || 10));
+  gState.daysCount = days;
+  gState.dailyAmount = Math.max(1, Number(gState.dailyAmount) || 100);
+  if (!Array.isArray(gState.rows) || !gState.rows.length) {
+    gState.rows = DEFAULT_NAMES.map((name, i) => ({
+      name,
+      status: i === 0 ? 'turn' : 'waiting',
+      pays: Array(days).fill(0)
+    }));
+  }
+  gState.rows.forEach(r => {
+    if (!Array.isArray(r.pays)) r.pays = [];
+    while (r.pays.length < days) r.pays.push(0);
+    if (r.pays.length > days) r.pays.length = days;
+  });
+}
+
+function computeStats() {
+  const days = gState.daysCount;
+  const daily = gState.dailyAmount;
+  const targetPerPerson = days * daily;
+  const dayTotals = Array(days).fill(0);
+  let grandPaid = 0, grandRem = 0, completedCount = 0, receivedCount = 0;
+
+  const rowStats = gState.rows.map(r => {
+    let paid = 0;
+    for (let d = 0; d < days; d++) {
+      const v = Number(r.pays[d]) || 0;
+      paid += v;
+      dayTotals[d] += v;
+    }
+    const rem = Math.max(0, targetPerPerson - paid);
+    if (rem === 0) completedCount++;
+    if (r.status === 'received') receivedCount++;
+    grandPaid += paid;
+    grandRem += rem;
+    return { paid, rem };
+  });
+
+  const grandTarget = gState.rows.length * targetPerPerson;
+  const turnIdx = gState.rows.findIndex(r => r.status === 'turn');
+  const turnText = turnIdx !== -1
+    ? `#${turnIdx + 1} ${gState.rows[turnIdx].name}`
+    : (receivedCount === gState.rows.length && gState.rows.length > 0 ? 'اكتملت الجمعية 🎉' : '—');
+
+  return { dayTotals, rowStats, grandTarget, grandPaid, grandRem, completedCount, receivedCount, turnText };
+}
+
+function updateSummaryOnly() {
+  const st = computeStats();
+  $('stTarget').textContent = fmt(st.grandTarget);
+  $('stPaid').textContent = fmt(st.grandPaid);
+  $('stRem').textContent = fmt(st.grandRem);
+  $('stTurn').textContent = st.turnText;
+  $('hintAmt').textContent = gState.dailyAmount;
+
+  st.rowStats.forEach((rs, rIdx) => {
+    const paidEl = $('r-paid-' + rIdx);
+    const remEl = $('r-rem-' + rIdx);
+    const pStEl = $('r-pst-' + rIdx);
+    if (paidEl) paidEl.textContent = fmt(rs.paid);
+    if (remEl) remEl.textContent = fmt(rs.rem);
+    if (pStEl) {
+      pStEl.innerHTML = rs.rem === 0
+        ? '<span class="pill pos">خالص</span>'
+        : '<span class="muted">متبقي</span>';
+    }
+  });
+
+  st.dayTotals.forEach((dt, dIdx) => {
+    const dEl = $('tot-day-' + dIdx);
+    if (dEl) dEl.textContent = fmt(dt);
+  });
+  if ($('tot-paid')) $('tot-paid').textContent = fmt(st.grandPaid);
+  if ($('tot-rem')) $('tot-rem').textContent = fmt(st.grandRem);
+  if ($('tot-pst')) $('tot-pst').textContent = `${st.completedCount} / ${gState.rows.length}`;
+  if ($('tot-tst')) $('tot-tst').textContent = `قبض ${st.receivedCount} / ${gState.rows.length}`;
+}
+
+function renderTable() {
+  ensureRowsStructure();
+  $('startDate').value = gState.startDate;
+  $('dailyAmount').value = gState.dailyAmount;
+  $('daysCount').value = gState.daysCount;
+
+  const days = gState.daysCount;
+  const st = computeStats();
+
+  let thDays = '';
+  for (let d = 0; d < days; d++) {
+    thDays += `<th>يوم ${d + 1}<br><span style="font-size:12px;opacity:.9">${dayShortDate(gState.startDate, d)}</span></th>`;
+  }
+
+  const bodyRows = gState.rows.map((r, rIdx) => {
+    const rs = st.rowStats[rIdx];
+    const rowCls = r.status === 'received' ? 'st-received' : r.status === 'turn' ? 'st-turn' : '';
+
+    let dayCells = '';
+    for (let d = 0; d < days; d++) {
+      const v = Number(r.pays[d]) || 0;
+      dayCells += `<td>
+        <input type="number" inputmode="decimal" min="0" class="gm-pay"
+          data-r="${rIdx}" data-d="${d}" value="${v ? v : ''}" placeholder="—">
+      </td>`;
+    }
+
+    const payBadge = rs.rem === 0
+      ? '<span class="pill pos">خالص</span>'
+      : '<span class="muted">متبقي</span>';
+
+    return `<tr class="${rowCls}">
+      <td class="sticky-1">${rIdx + 1}</td>
+      <td class="sticky-2">
+        <div style="display:flex;align-items:center;gap:2px">
+          <input type="text" class="gm-name" data-name-idx="${rIdx}" value="${esc(r.name)}">
+          <button type="button" class="gm-del-row" title="حذف الصف" onclick="removeSubscriber(${rIdx})">✕</button>
+        </div>
+      </td>
+      ${dayCells}
+      <td class="amt" id="r-paid-${rIdx}">${fmt(rs.paid)}</td>
+      <td class="amt" id="r-rem-${rIdx}">${fmt(rs.rem)}</td>
+      <td id="r-pst-${rIdx}">${payBadge}</td>
+      <td>
+        <select class="gm-turn-sel ${r.status}" onchange="onStatusChange(${rIdx}, this.value)">
+          <option value="waiting" ${r.status === 'waiting' ? 'selected' : ''}>في الانتظار</option>
+          <option value="turn" ${r.status === 'turn' ? 'selected' : ''}>عليه الدور</option>
+          <option value="received" ${r.status === 'received' ? 'selected' : ''}>تم القبض</option>
+        </select>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const totDayCells = st.dayTotals.map((dt, dIdx) =>
+    `<td class="amt" id="tot-day-${dIdx}">${fmt(dt)}</td>`
+  ).join('');
+
+  $('tableBox').innerHTML = `
+    <table class="gm-tbl">
+      <thead>
+        <tr>
+          <th class="sticky-1">م</th>
+          <th class="sticky-2">اسم المشترك</th>
+          ${thDays}
+          <th>إجمالي المدفوع</th>
+          <th>المتبقي</th>
+          <th>حالة الدفع</th>
+          <th>حالة القبض</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bodyRows}
+        <tr class="gm-tot">
+          <td class="sticky-1">—</td>
+          <td class="sticky-2">الإجمالي اليومي</td>
+          ${totDayCells}
+          <td class="amt" id="tot-paid">${fmt(st.grandPaid)}</td>
+          <td class="amt" id="tot-rem">${fmt(st.grandRem)}</td>
+          <td id="tot-pst">${st.completedCount} / ${gState.rows.length}</td>
+          <td id="tot-tst">قبض ${st.receivedCount} / ${gState.rows.length}</td>
+        </tr>
+      </tbody>
+    </table>`;
+
+  updateSummaryOnly();
+}
+
+function onStatusChange(idx, newStatus) {
+  const rows = gState.rows;
+  if (!rows[idx]) return;
+
+  if (newStatus === 'received') {
+    rows[idx].status = 'received';
+    let nextIdx = -1;
+    for (let i = idx + 1; i < rows.length; i++) {
+      if (rows[i].status === 'waiting') { nextIdx = i; break; }
+    }
+    if (nextIdx === -1) {
+      for (let i = 0; i < idx; i++) {
+        if (rows[i].status === 'waiting') { nextIdx = i; break; }
+      }
+    }
+    if (nextIdx !== -1) {
+      rows.forEach((r, i) => { if (i !== nextIdx && r.status === 'turn') r.status = 'waiting'; });
+      rows[nextIdx].status = 'turn';
+      toast(`تم تسجيل قبض ${rows[idx].name} — الدور الآن على: ${rows[nextIdx].name}`, true);
+    } else {
+      toast(`تم تسجيل قبض ${rows[idx].name}`, true);
+    }
+  } else if (newStatus === 'turn') {
+    rows.forEach((r, i) => {
+      if (i !== idx && r.status === 'turn') r.status = 'waiting';
+    });
+    rows[idx].status = 'turn';
+  } else {
+    rows[idx].status = 'waiting';
+  }
+
+  dirty = true;
+  renderTable();
+}
+
+function onSettingsChange() {
+  gState.startDate = $('startDate').value || '2026-11-22';
+  gState.dailyAmount = Math.max(1, Number($('dailyAmount').value) || 100);
+  gState.daysCount = Math.max(1, Math.min(31, Number($('daysCount').value) || 10));
+  dirty = true;
+  renderTable();
+}
+
+function addSubscriber() {
+  const name = prompt('اكتب اسم المشترك الجديد:');
+  if (!name || !name.trim()) return;
+  const hasTurn = gState.rows.some(r => r.status === 'turn');
+  gState.rows.push({
+    name: name.trim(),
+    status: hasTurn ? 'waiting' : 'turn',
+    pays: Array(gState.daysCount).fill(0)
+  });
+  dirty = true;
+  renderTable();
+}
+
+function removeSubscriber(idx) {
+  const r = gState.rows[idx];
+  if (!r) return;
+  if (!confirm(`متأكد إنك عايز تمسح "${r.name}" من الجدول؟`)) return;
+  const wasTurn = r.status === 'turn';
+  gState.rows.splice(idx, 1);
+  if (wasTurn && gState.rows.length) {
+    const nextW = gState.rows.findIndex(x => x.status === 'waiting');
+    if (nextW !== -1) gState.rows[nextW].status = 'turn';
+  }
+  dirty = true;
+  renderTable();
+}
+
+function resetCycle() {
+  if (!confirm('بدء دورة جديدة بنفس الأسماء وتصفير كل المبالغ والقبض؟')) return;
+  gState.rows.forEach((r, i) => {
+    r.pays = Array(gState.daysCount).fill(0);
+    r.status = i === 0 ? 'turn' : 'waiting';
+  });
+  dirty = true;
+  renderTable();
+  toast('تم تجهيز دورة جديدة، اضغط حفظ لتأكيدها في الشيت', true);
+}
+
+const tableBox = $('tableBox');
+tableBox.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.r !== undefined && el.dataset.d !== undefined) {
+    const r = Number(el.dataset.r);
+    const d = Number(el.dataset.d);
+    gState.rows[r].pays[d] = Number(el.value) || 0;
+    dirty = true;
+    updateSummaryOnly();
+  } else if (el.dataset.nameIdx !== undefined) {
+    const idx = Number(el.dataset.nameIdx);
+    gState.rows[idx].name = el.value;
+    dirty = true;
+    updateSummaryOnly();
+  }
+});
+
+tableBox.addEventListener('dblclick', e => {
+  const el = e.target;
+  if (el.dataset.r !== undefined && el.dataset.d !== undefined && !el.value) {
+    const r = Number(el.dataset.r);
+    const d = Number(el.dataset.d);
+    el.value = gState.dailyAmount;
+    gState.rows[r].pays[d] = gState.dailyAmount;
+    dirty = true;
+    updateSummaryOnly();
+  }
+});
+
+async function saveGamiya() {
+  const btn = $('btnSave');
+  btn.disabled = true;
+  btn.textContent = 'جاري الحفظ...';
+  try {
+    await call('saveGamiya', { data: JSON.stringify(gState) });
+    dirty = false;
+    toast('تم حفظ جدول الجمعية في الشيت بنجاح', true);
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 حفظ الجمعية';
+  }
+}
+
+(async function init() {
+  const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = dark ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  paintThemeBtn(theme);
+
+  try {
+    const data = await call('getGamiya');
+    if (data && Array.isArray(data.rows)) {
+      gState = data;
+    }
+  } catch (e) {
+    toast('تعذر تحميل البيانات: ' + e.message, false);
+  }
+  renderTable();
+})();
+</script>
+</body>
+</html>
