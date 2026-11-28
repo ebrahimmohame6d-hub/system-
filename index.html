@@ -49,14 +49,15 @@
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-let CO = [], CN = {};
+let CO = [], OUT_CO = [], CN = {};
 let reps = [], recvList = [], state = {}, openSet = new Set();
 let currentDate = '', dirty = false, savedDaysList = [];
 const $ = id => document.getElementById(id);
 
 const BLANK = () => {
   const b = { total:'', cash:'', insta:'', instaRecv:'', voda:'', vodaRecv:'' };
-  CO.forEach(k => { b['zi_' + k] = ''; b['zo_' + k] = ''; });
+  CO.forEach(k => { b['zi_' + k] = ''; });
+  OUT_CO.forEach(k => { b['zo_' + k] = ''; });
   return b;
 };
 function repOf(n) { return reps.find(x => x.name === n) || { name: n, rate: 27, payType: 'daily' }; }
@@ -175,7 +176,9 @@ document.addEventListener('keydown', e => {
 
 // ---------- الحسابات ----------
 function zoneSum(s) {
-  return CO.reduce((a, k) => a + (Number(s['zi_' + k]) || 0) + (Number(s['zo_' + k]) || 0), 0);
+  const inSum = CO.reduce((a, k) => a + (Number(s['zi_' + k]) || 0), 0);
+  const outSum = OUT_CO.reduce((a, k) => a + (Number(s['zo_' + k]) || 0), 0);
+  return inSum + outSum;
 }
 function calcOf(name) {
   const rep = repOf(name);
@@ -190,7 +193,8 @@ function calcOf(name) {
 function remCls(v) { return v < 0 ? ' neg' : v === 0 ? ' zero' : ''; }
 function zoneInputs(i, prefix) {
   const s = state[reps[i].name];
-  return CO.map(k => `<div><label>${esc(CN[k])}</label>
+  const keys = prefix === 'zi' ? CO : OUT_CO;
+  return keys.map(k => `<div><label>${esc(CN[k])}</label>
     <input type="number" inputmode="numeric" min="0" placeholder="0" data-i="${i}" data-key="${prefix}_${k}" value="${sv(s[prefix + '_' + k])}"></div>`).join('');
 }
 function netLabelText(c) {
@@ -326,7 +330,8 @@ async function loadDay() {
       rows.forEach(r => {
         if (!state[r.rep]) return;
         const st = { total: sv(r.total), cash: sv(r.cash), insta: sv(r.insta), instaRecv: r.instaRecv || '', voda: sv(r.voda), vodaRecv: r.vodaRecv || '' };
-        CO.forEach(k => { st['zi_' + k] = sv(r.zin && r.zin[k]); st['zo_' + k] = sv(r.zout && r.zout[k]); });
+        CO.forEach(k => { st['zi_' + k] = sv(r.zin && r.zin[k]); });
+        OUT_CO.forEach(k => { st['zo_' + k] = sv(r.zout && r.zout[k]); });
         state[r.rep] = st;
       });
     }
@@ -349,7 +354,8 @@ async function persistDay() {
     const s = state[r.name];
     const c = calcOf(r.name);
     const zin = {}, zout = {};
-    CO.forEach(k => { zin[k] = Number(s['zi_' + k]) || 0; zout[k] = Number(s['zo_' + k]) || 0; });
+    CO.forEach(k => { zin[k] = Number(s['zi_' + k]) || 0; });
+    OUT_CO.forEach(k => { zout[k] = Number(s['zo_' + k]) || 0; });
     return {
       rep: r.name, total: Number(s.total) || 0, count: c.count, commission: c.commission, rate: rateOf(r.name),
       payType: r.payType,
@@ -390,7 +396,9 @@ async function clearRep(i) {
   paintThemeBtn(theme);
   try {
     const p = await call('getPrices');
-    CO = p.keys; CN = p.names;
+    CO = p.keys;
+    CN = p.names;
+    OUT_CO = p.outKeys || CO.filter(k => p.prices && p.prices.outZone && p.prices.outZone[k] != null);
     await loadReps();
     await loadRecv();
   } catch (e) { toast('تعذر تحميل البيانات: ' + e.message, false); }
