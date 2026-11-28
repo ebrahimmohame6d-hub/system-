@@ -28,24 +28,47 @@
 
   <main class="content">
     <div class="card">
-      <div class="ctrl">
+      <div class="ctrl" style="justify-content:space-between;margin-bottom:12px">
+        <div class="seg">
+          <button id="modeDay" class="on" onclick="setMode('day')">أرباح اليوم</button>
+          <button id="modeWeek" onclick="setMode('week')">أرباح الأسبوع</button>
+          <button id="modeAll" onclick="setMode('all')">كل الأيام</button>
+        </div>
+        <div id="scopeLabel" class="muted"></div>
+      </div>
+
+      <div id="dayControls" class="ctrl">
         <button class="btn" onclick="shift(1)">‹ التالي</button>
         <input type="date" id="pDate" onchange="onDate(this.value)">
         <button class="btn" onclick="shift(-1)">السابق ›</button>
       </div>
-      <div class="ctrl" style="margin-top:12px;justify-content:space-between">
-        <div class="seg">
-          <button id="modeDay" class="on" onclick="setMode('day')">يوم واحد</button>
-          <button id="modeAll" onclick="setMode('all')">كل الأيام</button>
+
+      <div id="weekControls" style="display:none">
+        <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:0">
+          <div><label>من تاريخ</label><input type="date" id="wFrom" onchange="render()"></div>
+          <div><label>إلى تاريخ</label><input type="date" id="wTo" onchange="render()"></div>
         </div>
-        <div id="scopeLabel" class="muted"></div>
+        <div class="ctrl" style="margin-top:10px">
+          <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setWeekPreset('thisWeek')">الأسبوع الحالي</button>
+          <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setWeekPreset('last7')">آخر 7 أيام</button>
+          <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setWeekPreset('lastWeek')">الأسبوع الماضي</button>
+        </div>
       </div>
     </div>
 
     <div class="card">
       <h2 class="sec">ملخص الشحنات حسب الشركة</h2>
       <div id="coCards" class="co-cards"></div>
-      <div class="big"><span>ربح الشركة الإجمالي</span><b id="grandProfit">0</b></div>
+
+      <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+        <div class="stat s-all">إجمالي الأرباح (قبل الأسبوعي)<b id="grossProfit">0</b></div>
+        <div class="stat s-voda">علينا عمولات أسبوعية<b id="weeklyOwed">0</b></div>
+        <div class="stat s-cash">صافي ربح الشركة (الباقي)<b id="netProfitBox">0</b></div>
+      </div>
+
+      <div id="weeklyOwedDetails" style="margin-bottom:12px"></div>
+
+      <div class="big"><span>صافي ربح الشركة (الباقي ليك)</span><b id="grandProfit">0</b></div>
     </div>
 
     <div class="card">
@@ -63,7 +86,7 @@
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-let cfg = null, rateMap = {}, mode = 'day', curDate = '';
+let cfg = null, rateMap = {}, typeMap = {}, mode = 'day', curDate = '';
 const $ = id => document.getElementById(id);
 
 function call(action, params = {}) {
@@ -108,27 +131,59 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
+function setWeekPreset(type) {
+  const today = todayISO();
+  if (type === 'last7') {
+    $('wFrom').value = addDays(today, -6);
+    $('wTo').value = today;
+  } else if (type === 'thisWeek') {
+    const d = new Date();
+    const diffToSat = (d.getDay() + 1) % 7;
+    const sat = addDays(today, -diffToSat);
+    $('wFrom').value = sat;
+    $('wTo').value = addDays(sat, 6);
+  } else if (type === 'lastWeek') {
+    const d = new Date();
+    const diffToSat = (d.getDay() + 1) % 7;
+    const sat = addDays(today, -diffToSat);
+    $('wFrom').value = addDays(sat, -7);
+    $('wTo').value = addDays(sat, -1);
+  }
+  if (mode === 'week') render();
+}
+
 async function collectRows() {
   if (mode === 'day') {
     const rows = await call('getDay', { date: curDate });
     return { rows: rows || [], days: rows ? 1 : 0 };
   }
-  const days = (await call('listDays')) || [];
+  let days = (await call('listDays')) || [];
+  if (mode === 'week') {
+    const from = $('wFrom').value;
+    const to = $('wTo').value;
+    days = days.filter(d => (!from || d >= from) && (!to || d <= to));
+  }
   const results = await Promise.all(days.map(d => call('getDay', { date: d }).catch(() => null)));
   let all = [], n = 0;
   results.forEach(r => { if (r) { all = all.concat(r); n++; } });
   return { rows: all, days: n };
 }
 
-// ربح الشركة = (سعر الشركة − عمولة المندوب للشحنة) × عدد الشحنات
+// صافي ربح الشركة = (سعر الشركة − عمولة المندوب للشحنة) × عدد الشحنات
+// إجمالي الأرباح الموجودة حالياً = صافي ربح الشركة + عمولات المناديب الأسبوعيين المؤجلة
 function compute(rows) {
   const CO = cfg.keys;
   const co = {};
   CO.forEach(k => { co[k] = { inN: 0, inP: 0, outN: 0, outP: 0 }; });
   const reps = {};
+  const weeklyOwed = {};
+
   rows.forEach(r => {
     const rate = rateMap[r.rep] || 27;
-    if (!reps[r.rep]) reps[r.rep] = { n: 0, p: 0 };
+    const isWeekly = typeMap[r.rep] === 'weekly';
+    if (!reps[r.rep]) reps[r.rep] = { n: 0, p: 0, isWeekly };
+
+    let rowCount = 0;
     CO.forEach(k => {
       const zi = Number(r.zin && r.zin[k]) || 0;
       const zo = Number(r.zout && r.zout[k]) || 0;
@@ -138,9 +193,17 @@ function compute(rows) {
       co[k].outN += zo; co[k].outP += po;
       reps[r.rep].n += zi + zo;
       reps[r.rep].p += pi + po;
+      rowCount += zi + zo;
     });
+
+    if (isWeekly) {
+      const comm = Number(r.commission) || (rowCount * rate);
+      if (comm > 0) {
+        weeklyOwed[r.rep] = (weeklyOwed[r.rep] || 0) + comm;
+      }
+    }
   });
-  return { co, reps };
+  return { co, reps, weeklyOwed };
 }
 
 async function render() {
@@ -149,19 +212,48 @@ async function render() {
   try {
     if (!cfg) cfg = await call('getPrices');
     if (!Object.keys(rateMap).length) {
-      ((await call('getReps')) || []).forEach(r => { rateMap[r.name] = r.rate; });
+      ((await call('getReps')) || []).forEach(r => {
+        rateMap[r.name] = r.rate;
+        typeMap[r.name] = r.payType || 'daily';
+      });
     }
     const { rows, days } = await collectRows();
-    const { co, reps } = compute(rows);
+    const { co, reps, weeklyOwed } = compute(rows);
     const CO = cfg.keys;
 
-    $('scopeLabel').textContent = mode === 'day'
-      ? 'يوم ' + dmy(curDate) + (days ? '' : ' (مفيش بيانات محفوظة)')
-      : 'كل الأيام المحفوظة (' + days + ' يوم)';
+    if (mode === 'day') {
+      $('scopeLabel').textContent = 'يوم ' + dmy(curDate) + (days ? '' : ' (مفيش بيانات محفوظة)');
+    } else if (mode === 'week') {
+      const f = $('wFrom').value, t = $('wTo').value;
+      $('scopeLabel').textContent = `من ${f ? dmy(f) : 'البداية'} إلى ${t ? dmy(t) : 'النهاية'} (${days} يوم)`;
+    } else {
+      $('scopeLabel').textContent = 'كل الأيام المحفوظة (' + days + ' يوم)';
+    }
 
-    let grand = 0;
-    CO.forEach(k => { grand += co[k].inP + co[k].outP; });
-    $('grandProfit').textContent = fmt(grand);
+    let netProfit = 0;
+    CO.forEach(k => { netProfit += co[k].inP + co[k].outP; });
+
+    const owedEntries = Object.entries(weeklyOwed).filter(([, amt]) => amt > 0);
+    const owedTotal = owedEntries.reduce((a, [, amt]) => a + amt, 0);
+    const grossProfit = netProfit + owedTotal;
+
+    $('grossProfit').textContent = fmt(grossProfit);
+    $('weeklyOwed').textContent = fmt(owedTotal);
+    $('netProfitBox').textContent = fmt(netProfit);
+    $('grandProfit').textContent = fmt(netProfit);
+
+    if (owedEntries.length) {
+      const pills = owedEntries.map(([name, amt]) =>
+        `<span class="pill neg" style="margin:2px 4px">${esc(name)}: ${fmt(amt)}</span>`
+      ).join('');
+      $('weeklyOwedDetails').innerHTML = `
+        <div style="padding:10px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span style="font-size:13px;font-weight:800;color:var(--muted)">💸 تفاصيل العمولات الأسبوعية اللي علينا:</span>
+          <div>${pills}</div>
+        </div>`;
+    } else {
+      $('weeklyOwedDetails').innerHTML = '';
+    }
 
     $('coCards').innerHTML = CO.map(k => {
       const n = co[k].inN + co[k].outN;
@@ -198,24 +290,24 @@ async function render() {
           <td><span class="pill">${totIn + totOut}</span></td><td><span class="${pillCls(totInP + totOutP)}">${fmt(totInP + totOutP)}</span></td>
         </tr></tbody></table>`;
 
-    const repList = Object.keys(reps).map(n => ({ name: n, n: reps[n].n, p: reps[n].p })).sort((a, b) => b.p - a.p);
+    const repList = Object.keys(reps).map(n => ({ name: n, n: reps[n].n, p: reps[n].p, isWeekly: reps[n].isWeekly })).sort((a, b) => b.p - a.p);
     if (!repList.length) {
       $('repTable').innerHTML = '<div class="muted" style="padding:14px">مفيش بيانات</div>';
     } else {
       const maxP = Math.max(...repList.map(r => Math.abs(r.p)), 1);
       const body = repList.map(r => `<tr>
-        <td class="name">${esc(r.name)}</td>
+        <td class="name">${esc(r.name)}${r.isWeekly ? '<span class="badge">أسبوعي</span>' : ''}</td>
         <td><span class="pill">${r.n}</span></td>
         <td><span class="${pillCls(r.p)}">${fmt(r.p)}</span>
           <div style="height:7px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:6px;min-width:80px">
             <i style="display:block;height:100%;width:${Math.round(Math.abs(r.p) / maxP * 100)}%;background:var(--navy2);border-radius:99px"></i>
           </div></td></tr>`).join('');
       $('repTable').innerHTML = `<table>
-        <thead><tr><th>المندوب</th><th>عدد الشحنات (داخل + خارج)</th><th>ربح الشركة</th></tr></thead>
+        <thead><tr><th>المندوب</th><th>عدد الشحنات (داخل + خارج)</th><th>صافي ربح الشركة</th></tr></thead>
         <tbody>${body}
           <tr class="tot"><td class="name">الإجمالي</td>
             <td><span class="pill">${repList.reduce((a, r) => a + r.n, 0)}</span></td>
-            <td><span class="${pillCls(grand)}">${fmt(grand)}</span></td></tr>
+            <td><span class="${pillCls(netProfit)}">${fmt(netProfit)}</span></td></tr>
         </tbody></table>`;
     }
   } catch (e) {
@@ -228,7 +320,10 @@ async function render() {
 function setMode(m) {
   mode = m;
   $('modeDay').classList.toggle('on', m === 'day');
+  $('modeWeek').classList.toggle('on', m === 'week');
   $('modeAll').classList.toggle('on', m === 'all');
+  $('dayControls').style.display = m === 'day' ? 'flex' : 'none';
+  $('weekControls').style.display = m === 'week' ? 'block' : 'none';
   render();
 }
 function onDate(v) { if (!v) return; curDate = v; render(); }
@@ -245,6 +340,7 @@ function shift(n) {
   paintThemeBtn(theme);
   curDate = todayISO();
   $('pDate').value = curDate;
+  setWeekPreset('thisWeek');
   render();
 })();
 </script>
