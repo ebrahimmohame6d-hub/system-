@@ -127,6 +127,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .rate{font-size:13px;font-weight:700;color:#fff;background:var(--navy2);padding:5px 12px;border-radius:999px;white-space:nowrap}
 .del{width:38px;height:38px;flex-shrink:0;border:0;border-radius:12px;cursor:pointer;font-size:16px;background:rgba(184,106,106,.14);transition:background .2s}
 .del:hover{background:var(--bad)}
+.editbtn{width:38px;height:38px;flex-shrink:0;border:0;border-radius:12px;cursor:pointer;font-size:16px;background:rgba(44,74,125,.12);color:var(--navy2);transition:background .2s,transform .2s}
+.editbtn:hover{background:var(--navy2);color:#fff;transform:translateY(-1px)}
 .panel{display:none;padding:0 18px 18px;border-top:1px solid var(--line)}
 .card.open .panel{display:block;animation:slideDown .3s ease}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
@@ -148,6 +150,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .navbtn{padding:11px 14px;font-size:14px;white-space:nowrap}
 .btn{padding:12px 16px;font-size:14px}
 .btn.danger{background:#9c5d5d}
+.btn.ghost{background:var(--surface2);color:var(--ink);box-shadow:none;border:1.5px solid var(--line)}
 .btn.full{width:100%;margin-top:12px}
 .navbtn:hover,.btn:hover,.savebar button:hover{transform:translateY(-2px);filter:brightness(1.1)}
 .navbtn:active,.btn:active,.savebar button:active{transform:scale(.97)}
@@ -165,8 +168,10 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 #dStatus{font-size:13px;color:var(--muted);font-weight:700}
 .formrow{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:end}
 .list{list-style:none;margin:0;padding:0}
-.list li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 6px;border-bottom:1px solid var(--line);font-weight:700;animation:rowIn .4s both}
+.list li{padding:12px 6px;border-bottom:1px solid var(--line);font-weight:700;animation:rowIn .4s both}
 .list li:last-child{border-bottom:0}
+.rep-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.edit-drawer{margin-top:10px;padding:12px;border-radius:14px;background:var(--surface2);border:1.5px solid var(--line);display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;animation:slideDown .25s ease}
 
 /* ============ التوستات ============ */
 #toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:120;width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
@@ -232,7 +237,7 @@ td.name{text-align:right}
   .savebar{bottom:96px}
   .stats{grid-template-columns:1fr 1fr}
   .grid{grid-template-columns:1fr 1fr}
-  .formrow{grid-template-columns:1fr!important}
+  .formrow,.edit-drawer{grid-template-columns:1fr!important}
   .pair{grid-template-columns:1fr}
   .daybar .row{flex-wrap:wrap}
   header h1{font-size:17px}
