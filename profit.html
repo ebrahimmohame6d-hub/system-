@@ -147,13 +147,40 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
+function ddHTML(opts, value, placeholder, extra = '') {
+  const cur = value !== '' ? opts.find(o => o.v === value) : null;
+  return `<div class="dd${cur ? '' : ' empty'}" data-value="${esc(cur ? value : '')}" ${extra}>
+    <button type="button" class="dd-btn"><span class="dd-label">${esc(cur ? cur.l : placeholder)}</span><span class="dd-chev">▾</span></button>
+    <div class="dd-menu">${opts.map((o, k) =>
+      `<div class="dd-item${cur && o.v === value ? ' sel' : ''}${o.v === '' ? ' placeholder' : ''}" data-v="${esc(o.v)}" style="--k:${k}"><span class="dd-t">${esc(o.l)}</span></div>`
+    ).join('')}</div></div>`;
+}
+
+document.addEventListener('click', e => {
+  const item = e.target.closest('.dd-item');
+  if (item) {
+    const root = item.closest('.dd');
+    const v = item.dataset.v;
+    root.dataset.value = v;
+    root.querySelector('.dd-label').textContent = (item.querySelector('.dd-t') || item).textContent;
+    root.classList.toggle('empty', v === '');
+    root.querySelectorAll('.dd-item').forEach(x => x.classList.toggle('sel', x === item && v !== ''));
+    root.classList.remove('open');
+    if (root.id === 'savedDays' && v) { $('dDate').value = v; loadData(); }
+    return;
+  }
+  if (e.target.closest('.dd-menu')) return;
+  const btn = e.target.closest('.dd-btn');
+  const root = btn ? btn.closest('.dd') : null;
+  const wasOpen = root && root.classList.contains('open');
+  document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
+  if (root && !wasOpen) root.classList.add('open');
+});
+
 function renderSavedDays() {
   const cur = $('dDate').value;
-  $('savedDaysWrap').innerHTML = `
-    <select onchange="if(this.value){$('dDate').value=this.value;loadData();}">
-      <option value="">-- أيام محفوظة قبل كده --</option>
-      ${savedDaysList.map(d => `<option value="${d}" ${d === cur ? 'selected' : ''}>${dmy(d)}</option>`).join('')}
-    </select>`;
+  const opts = [{ v: '', l: '-- أيام محفوظة قبل كده --' }].concat(savedDaysList.map(d => ({ v: d, l: dmy(d) })));
+  $('savedDaysWrap').innerHTML = ddHTML(opts, savedDaysList.includes(cur) ? cur : '', '-- أيام محفوظة قبل كده --', 'id="savedDays"');
 }
 
 function setMode(m) {
