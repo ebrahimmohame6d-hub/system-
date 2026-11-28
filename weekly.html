@@ -29,41 +29,60 @@
 
   <main class="content">
     <div class="card">
-      <h2 class="sec">اختيار المندوب والفترة</h2>
-      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:0">
+      <div class="formrow" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px">
         <div>
           <label>المندوب</label>
-          <select id="repSelect" onchange="loadWeekly()"></select>
+          <select id="repSel" onchange="loadWeekly()"></select>
         </div>
         <div>
           <label>من تاريخ</label>
-          <input type="date" id="wFrom" onchange="loadWeekly()">
+          <input type="date" id="fromDate" onchange="loadWeekly()">
         </div>
         <div>
           <label>إلى تاريخ</label>
-          <input type="date" id="wTo" onchange="loadWeekly()">
+          <input type="date" id="toDate" onchange="loadWeekly()">
         </div>
       </div>
-
-      <div class="ctrl" style="margin-top:12px">
-        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setPreset('thisWeek')">الأسبوع الحالي</button>
-        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setPreset('last7')">آخر 7 أيام</button>
-        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setPreset('lastWeek')">الأسبوع الماضي</button>
+      <div class="ctrl">
+        <button type="button" class="btn ghost" style="padding:8px 12px;font-size:13px" onclick="setQuickRange(7)">آخر 7 أيام</button>
+        <button type="button" class="btn ghost" style="padding:8px 12px;font-size:13px" onclick="setQuickRange(14)">آخر أسبوعين</button>
+        <button type="button" class="btn ghost" style="padding:8px 12px;font-size:13px" onclick="setAllRange()">كل الأيام</button>
+        <button type="button" class="btn" style="padding:8px 14px;font-size:13px;margin-right:auto" onclick="copyReport()">📋 نسخ الكشف</button>
       </div>
     </div>
 
     <div class="card">
-      <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
-        <div class="stat s-all">إجمالي الشحنات<b id="stCount">0</b></div>
-        <div class="stat s-insta">إجمالي المبيعات<b id="stTotal">0</b></div>
-        <div class="stat s-cash">مستحق المندوب (العمولة)<b id="stComm">0</b></div>
+      <div class="big" style="margin-bottom:14px">
+        <span>إجمالي عمولة المندوب المستحقة</span>
+        <b id="bigComm">0</b>
       </div>
-      <div class="big"><span>صافي عمولة المندوب الأسبوعية</span><b id="bigComm">0</b></div>
+      <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat s-all">إجمالي التحصيل<b id="stTotal">0</b></div>
+        <div class="stat s-cash">عدد الشحنات<b id="stCount">0</b></div>
+        <div class="stat s-insta">عدد أيام الشغل<b id="stDays">0</b></div>
+      </div>
     </div>
 
     <div class="card">
       <h2 class="sec">تفصيل الأيام</h2>
-      <div class="tbl-box"><div id="daysTable" class="tscroll"><div class="muted" style="padding:14px">جاري التحميل...</div></div></div>
+      <div class="tbl-box">
+        <div class="tscroll">
+          <table>
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الإجمالي</th>
+                <th>عدد الشحنات</th>
+                <th>سعر الشحنة</th>
+                <th>العمولة</th>
+              </tr>
+            </thead>
+            <tbody id="daysBody">
+              <tr><td colspan="5" class="muted">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -72,6 +91,7 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
 let reps = [];
+let currentDays = [];
 const $ = id => document.getElementById(id);
 
 function call(action, params = {}) {
@@ -115,81 +135,94 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
-function setPreset(type) {
+function setQuickRange(daysBack) {
   const today = todayISO();
-  if (type === 'last7') {
-    $('wFrom').value = addDays(today, -6);
-    $('wTo').value = today;
-  } else if (type === 'thisWeek') {
-    const d = new Date();
-    const diffToSat = (d.getDay() + 1) % 7;
-    const sat = addDays(today, -diffToSat);
-    $('wFrom').value = sat;
-    $('wTo').value = addDays(sat, 6);
-  } else if (type === 'lastWeek') {
-    const d = new Date();
-    const diffToSat = (d.getDay() + 1) % 7;
-    const sat = addDays(today, -diffToSat);
-    $('wFrom').value = addDays(sat, -7);
-    $('wTo').value = addDays(sat, -1);
-  }
+  $('fromDate').value = addDays(today, -(daysBack - 1));
+  $('toDate').value = today;
+  loadWeekly();
+}
+
+function setAllRange() {
+  $('fromDate').value = '';
+  $('toDate').value = '';
   loadWeekly();
 }
 
 async function loadWeekly() {
-  const rep = $('repSelect').value;
-  if (!rep) {
-    $('daysTable').innerHTML = '<div class="muted" style="padding:14px">اختار مندوب</div>';
-    return;
-  }
-  $('daysTable').innerHTML = '<div class="muted" style="padding:14px">جاري التحميل...</div>';
+  const rep = $('repSel').value;
+  if (!rep) return;
+
+  $('daysBody').innerHTML = '<tr><td colspan="5" class="muted">جاري التحميل...</td></tr>';
   try {
-    const days = (await call('getRepWeekly', {
+    currentDays = (await call('getRepWeekly', {
       rep,
-      from: $('wFrom').value,
-      to: $('wTo').value
+      from: $('fromDate').value || '',
+      to: $('toDate').value || ''
     })) || [];
-
-    let totCount = 0, totSales = 0, totComm = 0;
-    days.forEach(d => {
-      totCount += Number(d.count) || 0;
-      totSales += Number(d.total) || 0;
-      totComm += Number(d.commission) || 0;
-    });
-
-    $('stCount').textContent = fmt(totCount);
-    $('stTotal').textContent = fmt(totSales);
-    $('stComm').textContent = fmt(totComm);
-    $('bigComm').textContent = fmt(totComm);
-
-    if (!days.length) {
-      $('daysTable').innerHTML = '<div class="muted" style="padding:14px">مفيش أيام مسجلة للمندوب ده في الفترة المختارة</div>';
-      return;
-    }
-
-    const body = days.map(d => `<tr>
-      <td>${dmy(d.date)}</td>
-      <td><span class="pill">${d.count}</span></td>
-      <td class="amt">${fmt(d.rate)}</td>
-      <td class="amt">${fmt(d.total)}</td>
-      <td><span class="pill pos">${fmt(d.commission)}</span></td>
-    </tr>`).join('');
-
-    $('daysTable').innerHTML = `<table>
-      <thead><tr><th>التاريخ</th><th>عدد الشحنات</th><th>العمولة</th><th>إجمالي المبيعات</th><th>مستحق المندوب</th></tr></thead>
-      <tbody>${body}
-        <tr class="tot">
-          <td>الإجمالي (${days.length} يوم)</td>
-          <td><span class="pill">${totCount}</span></td>
-          <td>—</td>
-          <td class="amt">${fmt(totSales)}</td>
-          <td><span class="pill pos">${fmt(totComm)}</span></td>
-        </tr>
-      </tbody></table>`;
+    renderWeekly();
   } catch (e) {
-    $('daysTable').innerHTML = '<div class="muted" style="padding:14px">خطأ: ' + esc(e.message) + '</div>';
+    $('daysBody').innerHTML = '<tr><td colspan="5" class="muted">خطأ: ' + esc(e.message) + '</td></tr>';
     toast(e.message, false);
   }
+}
+
+function renderWeekly() {
+  let sumTotal = 0, sumCount = 0, sumComm = 0;
+  currentDays.forEach(d => {
+    sumTotal += Number(d.total) || 0;
+    sumCount += Number(d.count) || 0;
+    sumComm += Number(d.commission) || 0;
+  });
+
+  $('bigComm').textContent = fmt(sumComm);
+  $('stTotal').textContent = fmt(sumTotal);
+  $('stCount').textContent = fmt(sumCount);
+  $('stDays').textContent = currentDays.length;
+
+  if (!currentDays.length) {
+    $('daysBody').innerHTML = '<tr><td colspan="5" class="muted">مفيش أيام شغل مسجلة للمندوب ده في الفترة المختارة</td></tr>';
+    return;
+  }
+
+  $('daysBody').innerHTML = currentDays.map(d => `<tr>
+    <td>${dmy(d.date)}</td>
+    <td class="amt">${fmt(d.total)}</td>
+    <td class="amt">${d.count}</td>
+    <td class="amt">${fmt(d.rate)}</td>
+    <td class="amt"><span class="pill pos">${fmt(d.commission)}</span></td>
+  </tr>`).join('') + `
+    <tr class="tot">
+      <td>الإجمالي</td>
+      <td class="amt">${fmt(sumTotal)}</td>
+      <td class="amt">${sumCount}</td>
+      <td>—</td>
+      <td class="amt">${fmt(sumComm)}</td>
+    </tr>`;
+}
+
+function copyReport() {
+  const rep = $('repSel').value;
+  if (!rep) return;
+  let sumTotal = 0, sumCount = 0, sumComm = 0;
+  const lines = currentDays.map(d => {
+    sumTotal += Number(d.total) || 0;
+    sumCount += Number(d.count) || 0;
+    sumComm += Number(d.commission) || 0;
+    return `• ${dmy(d.date)}: ${d.count} شحنة — عمولة ${fmt(d.commission)}`;
+  });
+
+  const txt = [
+    `كشف حساب المندوب: ${rep}`,
+    ...lines,
+    `----------------`,
+    `إجمالي الشحنات: ${sumCount}`,
+    `إجمالي التحصيل: ${fmt(sumTotal)}`,
+    `العمولة المستحقة: ${fmt(sumComm)}`
+  ].join('\n');
+
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('تم نسخ كشف الحساب', true))
+    .catch(() => toast('تعذر النسخ', false));
 }
 
 (async function init() {
@@ -198,17 +231,20 @@ async function loadWeekly() {
   document.documentElement.setAttribute('data-theme', theme);
   paintThemeBtn(theme);
 
+  const today = todayISO();
+  $('fromDate').value = addDays(today, -6);
+  $('toDate').value = today;
+
   try {
     reps = (await call('getReps')) || [];
-    const sorted = [...reps].sort((a, b) => (b.payType === 'weekly' ? 1 : 0) - (a.payType === 'weekly' ? 1 : 0));
-    $('repSelect').innerHTML = sorted.map(r =>
-      `<option value="${esc(r.name)}">${esc(r.name)}${r.payType === 'weekly' ? ' (أسبوعي)' : ''}</option>`
+    const sorted = [...reps].sort((a, b) => (b.payType === 'weekly') - (a.payType === 'weekly'));
+    $('repSel').innerHTML = sorted.map(r =>
+      `<option value="${esc(r.name)}">${esc(r.name)} (${r.payType === 'weekly' ? 'أسبوعي' : 'يومي'})</option>`
     ).join('');
   } catch (e) {
-    toast('تعذر تحميل المناديب: ' + e.message, false);
+    toast(e.message, false);
   }
-
-  setPreset('thisWeek');
+  loadWeekly();
 })();
 </script>
 </body>
