@@ -37,7 +37,7 @@
 
     <div class="card">
       <h2 class="sec">إضافة مندوب جديد</h2>
-      <div class="formrow" style="grid-template-columns:1fr 110px 130px">
+      <div class="formrow" style="grid-template-columns:1fr 110px 150px">
         <div>
           <label>اسم المندوب</label>
           <input type="text" id="newName" placeholder="اكتب الاسم">
@@ -48,10 +48,7 @@
         </div>
         <div>
           <label>نظام الحساب</label>
-          <select id="newType">
-            <option value="daily">يومي</option>
-            <option value="weekly">أسبوعي</option>
-          </select>
+          <div id="newTypeWrap"></div>
         </div>
       </div>
       <button type="button" class="btn full" id="btnAdd" onclick="addNewRep()">➕ إضافة المندوب</button>
@@ -61,6 +58,11 @@
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
+
+const TYPE_OPTS = [
+  { v: 'daily', l: 'يومي' },
+  { v: 'weekly', l: 'أسبوعي' }
+];
 
 let reps = [];
 let editingIdx = -1;
@@ -101,6 +103,46 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
+function ddHTML(opts, value, placeholder, extra = '') {
+  const cur = value !== '' ? opts.find(o => o.v === value) : null;
+  return `<div class="dd${cur ? '' : ' empty'}" data-value="${esc(cur ? value : '')}" ${extra}>
+    <button type="button" class="dd-btn"><span class="dd-label">${esc(cur ? cur.l : placeholder)}</span><span class="dd-chev">▾</span></button>
+    <div class="dd-menu">${opts.map((o, k) =>
+      `<div class="dd-item${cur && o.v === value ? ' sel' : ''}${o.v === '' ? ' placeholder' : ''}" data-v="${esc(o.v)}" style="--k:${k}"><span class="dd-t">${esc(o.l)}</span></div>`
+    ).join('')}</div></div>`;
+}
+
+function setDdValue(id, v) {
+  const root = $(id);
+  if (!root) return;
+  const items = [...root.querySelectorAll('.dd-item')];
+  const item = v !== '' ? items.find(x => x.dataset.v === v) : null;
+  root.dataset.value = item ? v : '';
+  root.querySelector('.dd-label').textContent = item ? item.textContent : items[0].textContent;
+  root.classList.toggle('empty', !item);
+  items.forEach(x => x.classList.toggle('sel', x === item));
+}
+
+document.addEventListener('click', e => {
+  const item = e.target.closest('.dd-item');
+  if (item) {
+    const root = item.closest('.dd');
+    const v = item.dataset.v;
+    root.dataset.value = v;
+    root.querySelector('.dd-label').textContent = (item.querySelector('.dd-t') || item).textContent;
+    root.classList.toggle('empty', v === '');
+    root.querySelectorAll('.dd-item').forEach(x => x.classList.toggle('sel', x === item && v !== ''));
+    root.classList.remove('open');
+    return;
+  }
+  if (e.target.closest('.dd-menu')) return;
+  const btn = e.target.closest('.dd-btn');
+  const root = btn ? btn.closest('.dd') : null;
+  const wasOpen = root && root.classList.contains('open');
+  document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
+  if (root && !wasOpen) root.classList.add('open');
+});
+
 function render() {
   if (!reps.length) {
     $('repsList').innerHTML = '<li class="muted">مفيش مناديب لسه</li>';
@@ -117,10 +159,7 @@ function render() {
       <div class="edit-drawer">
         <div>
           <label>نظام الحساب</label>
-          <select id="editType-${idx}">
-            <option value="daily" ${!isWeekly ? 'selected' : ''}>يومي</option>
-            <option value="weekly" ${isWeekly ? 'selected' : ''}>أسبوعي</option>
-          </select>
+          ${ddHTML(TYPE_OPTS, r.payType || 'daily', 'اختار النظام', `id="editType-${idx}"`)}
         </div>
         <div>
           <label>العمولة</label>
@@ -162,14 +201,18 @@ function cancelEdit() {
 async function saveEdit(idx, btn) {
   const r = reps[idx];
   if (!r) return;
-  const payType = $('editType-' + idx).value;
+  const dd = $('editType-' + idx);
+  const payType = (dd && dd.dataset.value) || 'daily';
   const rate = Number($('editRate-' + idx).value);
   if (!isFinite(rate) || rate <= 0) return toast('اكتب رقم عمولة صحيح أكبر من صفر', false);
 
   if (btn) { btn.disabled = true; btn.textContent = 'جاري الحفظ...'; }
   try {
     await call('updateRep', { name: r.name, rate, payType });
+    r.payType = payType;
+    r.rate = rate;
     editingIdx = -1;
+    render();
     toast(`تم تعديل ${r.name} إلى (${payType === 'weekly' ? 'أسبوعي' : 'يومي'})`, true);
     await loadReps();
   } catch (e) {
@@ -191,7 +234,8 @@ async function loadReps() {
 async function addNewRep() {
   const name = $('newName').value.trim();
   const rate = Number($('newRate').value);
-  const payType = $('newType').value;
+  const dd = $('newType');
+  const payType = (dd && dd.dataset.value) || 'daily';
   if (!name) return toast('اكتب اسم المندوب الأول', false);
   if (!isFinite(rate) || rate <= 0) return toast('اكتب عمولة صحيحة', false);
 
@@ -201,6 +245,7 @@ async function addNewRep() {
   try {
     await call('addRep', { name, rate, payType });
     $('newName').value = '';
+    setDdValue('newType', 'daily');
     toast(`تم إضافة ${name} بنجاح`, true);
     await loadReps();
   } catch (e) {
@@ -230,6 +275,7 @@ async function removeRep(idx) {
   const theme = dark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   paintThemeBtn(theme);
+  $('newTypeWrap').innerHTML = ddHTML(TYPE_OPTS, 'daily', 'اختار النظام', 'id="newType"');
   loadReps();
 })();
 </script>
