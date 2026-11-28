@@ -32,7 +32,7 @@
       <div class="formrow" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px">
         <div>
           <label>المندوب</label>
-          <select id="repSel" onchange="loadWeekly()"></select>
+          <div id="repSelWrap"></div>
         </div>
         <div>
           <label>من تاريخ</label>
@@ -135,6 +135,36 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
+function ddHTML(opts, value, placeholder, extra = '') {
+  const cur = value !== '' ? opts.find(o => o.v === value) : null;
+  return `<div class="dd${cur ? '' : ' empty'}" data-value="${esc(cur ? value : '')}" ${extra}>
+    <button type="button" class="dd-btn"><span class="dd-label">${esc(cur ? cur.l : placeholder)}</span><span class="dd-chev">▾</span></button>
+    <div class="dd-menu">${opts.map((o, k) =>
+      `<div class="dd-item${cur && o.v === value ? ' sel' : ''}${o.v === '' ? ' placeholder' : ''}" data-v="${esc(o.v)}" style="--k:${k}"><span class="dd-t">${esc(o.l)}</span></div>`
+    ).join('')}</div></div>`;
+}
+
+document.addEventListener('click', e => {
+  const item = e.target.closest('.dd-item');
+  if (item) {
+    const root = item.closest('.dd');
+    const v = item.dataset.v;
+    root.dataset.value = v;
+    root.querySelector('.dd-label').textContent = (item.querySelector('.dd-t') || item).textContent;
+    root.classList.toggle('empty', v === '');
+    root.querySelectorAll('.dd-item').forEach(x => x.classList.toggle('sel', x === item && v !== ''));
+    root.classList.remove('open');
+    if (root.id === 'repSel') loadWeekly();
+    return;
+  }
+  if (e.target.closest('.dd-menu')) return;
+  const btn = e.target.closest('.dd-btn');
+  const root = btn ? btn.closest('.dd') : null;
+  const wasOpen = root && root.classList.contains('open');
+  document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
+  if (root && !wasOpen) root.classList.add('open');
+});
+
 function setQuickRange(daysBack) {
   const today = todayISO();
   $('fromDate').value = addDays(today, -(daysBack - 1));
@@ -149,7 +179,8 @@ function setAllRange() {
 }
 
 async function loadWeekly() {
-  const rep = $('repSel').value;
+  const dd = $('repSel');
+  const rep = dd ? dd.dataset.value : '';
   if (!rep) return;
 
   $('daysBody').innerHTML = '<tr><td colspan="5" class="muted">جاري التحميل...</td></tr>';
@@ -201,7 +232,8 @@ function renderWeekly() {
 }
 
 function copyReport() {
-  const rep = $('repSel').value;
+  const dd = $('repSel');
+  const rep = dd ? dd.dataset.value : '';
   if (!rep) return;
   let sumTotal = 0, sumCount = 0, sumComm = 0;
   const lines = currentDays.map(d => {
@@ -234,13 +266,17 @@ function copyReport() {
   const today = todayISO();
   $('fromDate').value = addDays(today, -6);
   $('toDate').value = today;
+  $('repSelWrap').innerHTML = ddHTML([], '', '-- اختر المندوب --', 'id="repSel"');
 
   try {
     reps = (await call('getReps')) || [];
     const sorted = [...reps].sort((a, b) => (b.payType === 'weekly') - (a.payType === 'weekly'));
-    $('repSel').innerHTML = sorted.map(r =>
-      `<option value="${esc(r.name)}">${esc(r.name)} (${r.payType === 'weekly' ? 'أسبوعي' : 'يومي'})</option>`
-    ).join('');
+    const opts = sorted.map(r => ({
+      v: r.name,
+      l: `${r.name} (${r.payType === 'weekly' ? 'أسبوعي' : 'يومي'})`
+    }));
+    const firstVal = opts.length ? opts[0].v : '';
+    $('repSelWrap').innerHTML = ddHTML(opts, firstVal, '-- اختر المندوب --', 'id="repSel"');
   } catch (e) {
     toast(e.message, false);
   }
