@@ -10,7 +10,7 @@
 <body>
 
 <header>
-  <h1>إدارة المناديب</h1>
+  <h1>👥 إدارة المناديب</h1>
   <button class="hbtn theme" id="themeBtn" onclick="toggleTheme(this)" title="تبديل الوضع">🌙</button>
 </header>
 
@@ -24,30 +24,37 @@
     <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
     <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
     <a class="nav-item" href="weekly.html"><span class="ni">🗓️</span> حساب الأسبوعي</a>
+    <a class="nav-item" href="gamiya.html"><span class="ni">🤝</span> الجمعية</a>
   </aside>
 
   <main class="content">
     <div class="card">
-      <h2>المناديب الحاليين</h2>
-      <ul class="list" id="repList"><li class="muted">جاري التحميل...</li></ul>
+      <h2 class="sec">قايمة المناديب</h2>
+      <ul class="list" id="repsList">
+        <li class="muted">جاري التحميل...</li>
+      </ul>
     </div>
 
     <div class="card">
-      <h2>إضافة مندوب جديد</h2>
-      <div class="formrow" style="grid-template-columns:1fr 110px 150px">
-        <div><label>اسم المندوب</label><input type="text" id="newName" placeholder="اكتب الاسم"></div>
-        <div><label>العمولة</label><input type="number" id="newRate" value="27" min="1"></div>
-        <div><label>نظام الحساب</label><div id="typeBox"></div></div>
+      <h2 class="sec">إضافة مندوب جديد</h2>
+      <div class="formrow" style="grid-template-columns:1fr 110px 130px">
+        <div>
+          <label>اسم المندوب</label>
+          <input type="text" id="newName" placeholder="اكتب الاسم">
+        </div>
+        <div>
+          <label>العمولة</label>
+          <input type="number" id="newRate" inputmode="numeric" min="1" value="27">
+        </div>
+        <div>
+          <label>نظام الحساب</label>
+          <select id="newType">
+            <option value="daily">يومي</option>
+            <option value="weekly">أسبوعي</option>
+          </select>
+        </div>
       </div>
-      <button class="btn full" id="btnAdd" onclick="addRep()">➕ إضافة المندوب</button>
-    </div>
-
-    <div class="card">
-      <h2>حذف مندوب</h2>
-      <div class="formrow">
-        <div id="delBox"></div>
-        <button class="btn danger" id="btnDel" onclick="deleteRep()">🗑️ حذف</button>
-      </div>
+      <button type="button" class="btn full" id="btnAdd" onclick="addNewRep()">➕ إضافة المندوب</button>
     </div>
   </main>
 </div>
@@ -70,14 +77,13 @@ function call(action, params = {}) {
       if (res && res.ok) resolve(res.data);
       else reject(new Error((res && res.error) || 'حصل خطأ'));
     };
-    script.onerror = () => { cleanup(); reject(new Error('فشل الاتصال بالسيرفر، اتأكد من اللينك والنشر')); };
+    script.onerror = () => { cleanup(); reject(new Error('فشل الاتصال بالسيرفر')); };
     script.src = API_URL + '?' + qs.toString();
     document.body.appendChild(script);
   });
 }
 
 function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
 function paintThemeBtn(th) { const b = $('themeBtn'); if (b) b.textContent = th === 'dark' ? '☀️' : '🌙'; }
 function toggleTheme(btn) {
   const cur = document.documentElement.getAttribute('data-theme');
@@ -94,115 +100,109 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
-// ---------- القايمة المنسدلة ----------
-function ddHTML(opts, value, placeholder, extra = '') {
-  const cur = value !== '' ? opts.find(o => o.v === value) : null;
-  return `<div class="dd${cur ? '' : ' empty'}" data-value="${esc(cur ? value : '')}" ${extra}>
-    <button type="button" class="dd-btn"><span class="dd-label">${esc(cur ? cur.l : placeholder)}</span><span class="dd-chev">▾</span></button>
-    <div class="dd-menu">${opts.map((o, k) =>
-      `<div class="dd-item${cur && o.v === value ? ' sel' : ''}${o.v === '' ? ' placeholder' : ''}" data-v="${esc(o.v)}" style="--k:${k}">${esc(o.l)}</div>`
-    ).join('')}</div></div>`;
-}
-function pickDd(item) {
-  const root = item.closest('.dd');
-  const v = item.dataset.v;
-  root.dataset.value = v;
-  root.querySelector('.dd-label').textContent = item.textContent;
-  root.classList.toggle('empty', v === '');
-  root.querySelectorAll('.dd-item').forEach(x => x.classList.toggle('sel', x === item && v !== ''));
-  root.classList.remove('open');
-}
-document.addEventListener('click', e => {
-  const item = e.target.closest('.dd-item');
-  if (item) { pickDd(item); return; }
-  const btn = e.target.closest('.dd-btn');
-  const root = btn ? btn.closest('.dd') : null;
-  const wasOpen = root && root.classList.contains('open');
-  document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
-  if (root && !wasOpen) root.classList.add('open');
-});
-
-// ---------- الصفحة ----------
-function renderTypeDd() {
-  const opts = [
-    { v: 'daily', l: 'يومي' },
-    { v: 'weekly', l: 'أسبوعي' }
-  ];
-  $('typeBox').innerHTML = ddHTML(opts, 'daily', 'يومي', 'id="newType"');
-}
-
 function render() {
-  const list = $('repList'), box = $('delBox');
   if (!reps.length) {
-    list.innerHTML = '<li class="muted">مفيش مناديب</li>';
-    box.innerHTML = '<div class="muted">مفيش مناديب</div>';
+    $('repsList').innerHTML = '<li class="muted">مفيش مناديب لسه</li>';
     return;
   }
-  list.innerHTML = reps.map((r, idx) => {
-    const isW = r.payType === 'weekly';
-    const badge = isW
-      ? '<span class="badge" style="background:rgba(95,156,134,.18);color:#3f7a66">أسبوعي</span>'
-      : '<span class="badge">يومي</span>';
+  $('repsList').innerHTML = reps.map((r, idx) => {
+    const isWeekly = r.payType === 'weekly';
+    const typeBadge = isWeekly
+      ? `<span class="badge" style="background:rgba(217,119,6,.16);color:#b45309">أسبوعي</span>`
+      : `<span class="badge">يومي</span>`;
+    const toggleLabel = isWeekly ? 'تحويل ليومي' : 'تحويل لأسبوعي';
+    const toggleStyle = isWeekly ? 'background:#5f8f7d' : '';
+
     return `<li>
-      <span><span class="rep-name">${esc(r.name)}</span>${badge}</span>
-      <span style="display:flex;align-items:center;gap:8px">
-        <button type="button" class="btn" style="padding:5px 10px;font-size:12px" onclick="togglePayType(${idx})">
-          ${isW ? 'تحويل ليومي' : 'تحويل لأسبوعي'}
-        </button>
-        <span class="rate">العمولة: ${r.rate}</span>
-      </span>
+      <div>
+        <span>${esc(r.name)}</span>
+        ${typeBadge}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn" style="padding:6px 12px;font-size:13px;${toggleStyle}" onclick="toggleType(${idx}, this)">${toggleLabel}</button>
+        <button type="button" class="rate" style="border:0;cursor:pointer" title="تعديل العمولة" onclick="editRate(${idx})">العمولة: ${r.rate}</button>
+        <button type="button" class="del" title="حذف المندوب" onclick="removeRep(${idx})">🗑️</button>
+      </div>
     </li>`;
   }).join('');
-  const opts = [{ v: '', l: '-- اختار المندوب --' }].concat(reps.map(r => ({ v: r.name, l: r.name })));
-  box.innerHTML = ddHTML(opts, '', '-- اختار المندوب --', 'id="delSelect"');
-}
-
-async function togglePayType(idx) {
-  const r = reps[idx];
-  if (!r) return;
-  const nextType = r.payType === 'weekly' ? 'daily' : 'weekly';
-  try {
-    await call('updateRep', { name: r.name, rate: r.rate, payType: nextType });
-    toast('تم تحويل ' + r.name + ' إلى نظام ' + (nextType === 'weekly' ? 'الأسبوعي' : 'اليومي'), true);
-    await loadReps();
-  } catch (e) { toast(e.message, false); }
 }
 
 async function loadReps() {
-  try { reps = (await call('getReps')) || []; render(); }
-  catch (e) { toast('تعذر تحميل المناديب: ' + e.message, false); }
+  try {
+    reps = (await call('getReps')) || [];
+    render();
+  } catch (e) {
+    $('repsList').innerHTML = '<li class="muted">خطأ: ' + esc(e.message) + '</li>';
+    toast(e.message, false);
+  }
 }
-async function addRep() {
-  const nameEl = $('newName'), rateEl = $('newRate'), typeEl = $('newType');
-  const name = nameEl.value.trim();
-  const rate = Number(rateEl.value);
-  const payType = typeEl ? typeEl.dataset.value : 'daily';
-  if (!name) return toast('اكتب اسم المندوب', false);
-  if (!(rate > 0)) return toast('اكتب العمولة', false);
+
+async function toggleType(idx, btn) {
+  const r = reps[idx];
+  if (!r) return;
+  const nextType = r.payType === 'weekly' ? 'daily' : 'weekly';
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'جاري التحويل...'; }
+  try {
+    await call('updateRep', { name: r.name, rate: r.rate, payType: nextType });
+    toast(`تم تحويل ${r.name} إلى نظام ${nextType === 'weekly' ? 'أسبوعي' : 'يومي'}`, true);
+    await loadReps();
+  } catch (e) {
+    toast(e.message, false);
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
+async function editRate(idx) {
+  const r = reps[idx];
+  if (!r) return;
+  const val = prompt(`اكتب العمولة الجديدة للمندوب "${r.name}":`, r.rate);
+  if (val === null) return;
+  const num = Number(val);
+  if (!isFinite(num) || num <= 0) return toast('اكتب رقم عمولة صحيح أكبر من صفر', false);
+  try {
+    await call('updateRep', { name: r.name, rate: num, payType: r.payType });
+    toast(`تم تعديل عمولة ${r.name} إلى ${num}`, true);
+    await loadReps();
+  } catch (e) {
+    toast(e.message, false);
+  }
+}
+
+async function addNewRep() {
+  const name = $('newName').value.trim();
+  const rate = Number($('newRate').value);
+  const payType = $('newType').value;
+  if (!name) return toast('اكتب اسم المندوب الأول', false);
+  if (!isFinite(rate) || rate <= 0) return toast('اكتب عمولة صحيحة', false);
+
   const btn = $('btnAdd');
   btn.disabled = true;
+  btn.textContent = 'جاري الإضافة...';
   try {
     await call('addRep', { name, rate, payType });
-    nameEl.value = ''; rateEl.value = '27';
-    renderTypeDd();
-    toast('تم إضافة ' + name, true);
+    $('newName').value = '';
+    toast(`تم إضافة ${name} بنجاح`, true);
     await loadReps();
-  } catch (e) { toast(e.message, false); }
-  finally { btn.disabled = false; }
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '➕ إضافة المندوب';
+  }
 }
-async function deleteRep() {
-  const sel = $('delSelect');
-  const name = sel ? sel.dataset.value : '';
-  if (!name) return toast('اختار المندوب الأول', false);
-  if (!confirm('متأكد إنك عايز تحذف ' + name + '؟\nهيتشال من القايمة، والأيام القديمة هتفضل زي ما هي.')) return;
-  const btn = $('btnDel');
-  btn.disabled = true;
+
+async function removeRep(idx) {
+  const r = reps[idx];
+  if (!r) return;
+  if (!confirm(`متأكد إنك عايز تمسح المندوب "${r.name}"؟`)) return;
   try {
-    await call('deleteRep', { name });
-    toast('تم حذف ' + name, true);
+    await call('deleteRep', { name: r.name });
+    toast(`تم حذف ${r.name}`, true);
     await loadReps();
-  } catch (e) { toast(e.message, false); }
-  finally { btn.disabled = false; }
+  } catch (e) {
+    toast(e.message, false);
+  }
 }
 
 (function init() {
@@ -210,7 +210,6 @@ async function deleteRep() {
   const theme = dark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   paintThemeBtn(theme);
-  renderTypeDd();
   loadReps();
 })();
 </script>
