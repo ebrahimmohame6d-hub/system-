@@ -1,22 +1,20 @@
 /* ============ الألوان: عدّل هنا وهتتغير في كل الصفحات ============ */
 :root{
-  --bg:#eceef3;             /* خلفية: أبيض مطفي */
-  --surface:#f8f9fb;        /* الكروت */
-  --surface2:#eef1f6;       /* الخانات */
-  --ink:#1c2a48;            /* كحلي للنص */
+  --bg:#eceef3;
+  --surface:#f8f9fb;
+  --surface2:#eef1f6;
+  --ink:#1c2a48;
   --muted:#5d6a86;
   --line:#dde3ee;
-  --navy:#1f3560;           /* الكحلي الأساسي */
+  --navy:#1f3560;
   --navy2:#2c4a7d;
   --ok:#5f9c86; --bad:#b86a6a;
   --shadow:0 6px 22px rgba(28,42,72,.07);
   --radius:18px;
-  /* كروت الملخص */
   --c-cash:linear-gradient(135deg,#9cc4b2,#7aa897);
   --c-insta:linear-gradient(135deg,#b3abd3,#968cbd);
   --c-voda:linear-gradient(135deg,#d9b2aa,#c39a92);
   --c-all:linear-gradient(135deg,#a7bbd6,#8aa2c4);
-  /* الشركات */
   --co-oz:linear-gradient(135deg,#a6bcd8,#8ba4c6); --dot-oz:#8ba4c6;
   --co-tl:linear-gradient(135deg,#c0b5d8,#a79bc4); --dot-tl:#a79bc4;
   --co-mq:linear-gradient(135deg,#dcc4a2,#c6a981); --dot-mq:#c6a981;
@@ -88,7 +86,7 @@ main.content{flex:1;min-width:0;max-width:780px}
 h2{margin:0 0 12px;font-size:18px;font-weight:800}
 label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
 input,select{width:100%;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);border:1.5px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;transition:border-color .25s,box-shadow .25s,background .25s}
-input:focus{border-color:var(--navy2);background:var(--surface);box-shadow:0 0 0 4px rgba(44,74,125,.14)}
+input:focus,select:focus{border-color:var(--navy2);background:var(--surface);box-shadow:0 0 0 4px rgba(44,74,125,.14)}
 input[readonly]{opacity:.8;cursor:default}
 input[type=date]{color-scheme:light}
 [data-theme="dark"] input[type=date]{color-scheme:dark}
@@ -227,9 +225,9 @@ td.name{text-align:right}
   body{padding-bottom:84px}
   .wrap{flex-direction:column;margin-top:12px}
   main.content{max-width:none;width:100%}
-  .side{position:fixed;top:auto;bottom:10px;left:10px;right:10px;width:auto;z-index:70;flex-direction:row;padding:8px;border-radius:22px}
+  .side{position:fixed;top:auto;bottom:10px;left:10px;right:10px;width:auto;z-index:70;flex-direction:row;padding:6px;border-radius:22px}
   .side-title{display:none}
-  .nav-item{flex:1;flex-direction:column;gap:2px;padding:8px 2px;font-size:10.5px;text-align:center;justify-content:center}
+  .nav-item{flex:1;flex-direction:column;gap:2px;padding:7px 2px;font-size:10px;text-align:center;justify-content:center}
   .nav-item:hover{transform:none}
   .savebar{bottom:96px}
   .stats{grid-template-columns:1fr 1fr}
