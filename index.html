@@ -188,7 +188,6 @@ function calcOf(name) {
   const commission = count * rep.rate;
   const isWeekly = rep.payType === 'weekly';
   const totalVal = Number(s.total) || 0;
-  // الأسبوعي: الإجمالي قبل خصم العمولة = الإجمالي كامل، والباقي يبدأ بنفس رقم الإجمالي
   const net = isWeekly ? totalVal : (totalVal - commission);
   const paid = (Number(s.cash) || 0) + (Number(s.insta) || 0) + (Number(s.voda) || 0);
   return { count, commission, net, rem: net - paid, isWeekly };
