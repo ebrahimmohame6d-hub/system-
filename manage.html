@@ -63,6 +63,7 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
 let reps = [];
+let editingIdx = -1;
 const $ = id => document.getElementById(id);
 
 function call(action, params = {}) {
@@ -110,21 +111,71 @@ function render() {
     const typeBadge = isWeekly
       ? `<span class="badge" style="background:rgba(217,119,6,.16);color:#b45309">أسبوعي</span>`
       : `<span class="badge">يومي</span>`;
-    const toggleLabel = isWeekly ? 'تحويل ليومي' : 'تحويل لأسبوعي';
-    const toggleStyle = isWeekly ? 'background:#5f8f7d' : '';
+    const isEditing = editingIdx === idx;
+
+    const editBox = isEditing ? `
+      <div class="edit-drawer">
+        <div>
+          <label>نظام الحساب</label>
+          <select id="editType-${idx}">
+            <option value="daily" ${!isWeekly ? 'selected' : ''}>يومي</option>
+            <option value="weekly" ${isWeekly ? 'selected' : ''}>أسبوعي</option>
+          </select>
+        </div>
+        <div>
+          <label>العمولة</label>
+          <input type="number" id="editRate-${idx}" inputmode="numeric" min="1" value="${r.rate}">
+        </div>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn" style="padding:11px 16px" onclick="saveEdit(${idx}, this)">💾 حفظ</button>
+          <button type="button" class="btn ghost" style="padding:11px 12px" onclick="cancelEdit()">إلغاء</button>
+        </div>
+      </div>` : '';
 
     return `<li>
-      <div>
-        <span>${esc(r.name)}</span>
-        ${typeBadge}
+      <div class="rep-row">
+        <div>
+          <span>${esc(r.name)}</span>
+          ${typeBadge}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="rate">العمولة: ${r.rate}</span>
+          <button type="button" class="editbtn" title="تعديل نظام الحساب والعمولة" onclick="openEdit(${idx})">✏️</button>
+          <button type="button" class="del" title="حذف المندوب" onclick="removeRep(${idx})">🗑️</button>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <button type="button" class="btn" style="padding:6px 12px;font-size:13px;${toggleStyle}" onclick="toggleType(${idx}, this)">${toggleLabel}</button>
-        <button type="button" class="rate" style="border:0;cursor:pointer" title="تعديل العمولة" onclick="editRate(${idx})">العمولة: ${r.rate}</button>
-        <button type="button" class="del" title="حذف المندوب" onclick="removeRep(${idx})">🗑️</button>
-      </div>
+      ${editBox}
     </li>`;
   }).join('');
+}
+
+function openEdit(idx) {
+  editingIdx = (editingIdx === idx) ? -1 : idx;
+  render();
+}
+
+function cancelEdit() {
+  editingIdx = -1;
+  render();
+}
+
+async function saveEdit(idx, btn) {
+  const r = reps[idx];
+  if (!r) return;
+  const payType = $('editType-' + idx).value;
+  const rate = Number($('editRate-' + idx).value);
+  if (!isFinite(rate) || rate <= 0) return toast('اكتب رقم عمولة صحيح أكبر من صفر', false);
+
+  if (btn) { btn.disabled = true; btn.textContent = 'جاري الحفظ...'; }
+  try {
+    await call('updateRep', { name: r.name, rate, payType });
+    editingIdx = -1;
+    toast(`تم تعديل ${r.name} إلى (${payType === 'weekly' ? 'أسبوعي' : 'يومي'})`, true);
+    await loadReps();
+  } catch (e) {
+    toast(e.message, false);
+    if (btn) { btn.disabled = false; btn.textContent = '💾 حفظ'; }
+  }
 }
 
 async function loadReps() {
@@ -133,38 +184,6 @@ async function loadReps() {
     render();
   } catch (e) {
     $('repsList').innerHTML = '<li class="muted">خطأ: ' + esc(e.message) + '</li>';
-    toast(e.message, false);
-  }
-}
-
-async function toggleType(idx, btn) {
-  const r = reps[idx];
-  if (!r) return;
-  const nextType = r.payType === 'weekly' ? 'daily' : 'weekly';
-  const origText = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'جاري التحويل...'; }
-  try {
-    await call('updateRep', { name: r.name, rate: r.rate, payType: nextType });
-    toast(`تم تحويل ${r.name} إلى نظام ${nextType === 'weekly' ? 'أسبوعي' : 'يومي'}`, true);
-    await loadReps();
-  } catch (e) {
-    toast(e.message, false);
-    if (btn) { btn.disabled = false; btn.textContent = origText; }
-  }
-}
-
-async function editRate(idx) {
-  const r = reps[idx];
-  if (!r) return;
-  const val = prompt(`اكتب العمولة الجديدة للمندوب "${r.name}":`, r.rate);
-  if (val === null) return;
-  const num = Number(val);
-  if (!isFinite(num) || num <= 0) return toast('اكتب رقم عمولة صحيح أكبر من صفر', false);
-  try {
-    await call('updateRep', { name: r.name, rate: num, payType: r.payType });
-    toast(`تم تعديل عمولة ${r.name} إلى ${num}`, true);
-    await loadReps();
-  } catch (e) {
     toast(e.message, false);
   }
 }
@@ -198,6 +217,7 @@ async function removeRep(idx) {
   if (!confirm(`متأكد إنك عايز تمسح المندوب "${r.name}"؟`)) return;
   try {
     await call('deleteRep', { name: r.name });
+    if (editingIdx === idx) editingIdx = -1;
     toast(`تم حذف ${r.name}`, true);
     await loadReps();
   } catch (e) {
