@@ -23,6 +23,7 @@
     <a class="nav-item" href="manage.html"><span class="ni">👥</span> المناديب</a>
     <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
     <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
+    <a class="nav-item" href="weekly.html"><span class="ni">🗓️</span> حساب الأسبوعي</a>
   </aside>
 
   <main class="content">
@@ -58,7 +59,8 @@ const BLANK = () => {
   CO.forEach(k => { b['zi_' + k] = ''; b['zo_' + k] = ''; });
   return b;
 };
-function rateOf(n) { const r = reps.find(x => x.name === n); return r ? r.rate : 27; }
+function repOf(n) { return reps.find(x => x.name === n) || { name: n, rate: 27, payType: 'daily' }; }
+function rateOf(n) { return repOf(n).rate; }
 function ensureState() { reps.forEach(r => { if (!state[r.name]) state[r.name] = BLANK(); }); }
 function resetState() { state = {}; ensureState(); }
 
@@ -176,12 +178,14 @@ function zoneSum(s) {
   return CO.reduce((a, k) => a + (Number(s['zi_' + k]) || 0) + (Number(s['zo_' + k]) || 0), 0);
 }
 function calcOf(name) {
+  const rep = repOf(name);
   const s = state[name];
   const count = zoneSum(s);
-  const commission = count * rateOf(name);
-  const net = (Number(s.total) || 0) - commission;
+  const commission = count * rep.rate;
+  const isWeekly = rep.payType === 'weekly';
+  const net = isWeekly ? (Number(s.total) || 0) : ((Number(s.total) || 0) - commission);
   const paid = (Number(s.cash) || 0) + (Number(s.insta) || 0) + (Number(s.voda) || 0);
-  return { count, commission, net, rem: net - paid };
+  return { count, commission, net, rem: net - paid, isWeekly };
 }
 function remCls(v) { return v < 0 ? ' neg' : v === 0 ? ' zero' : ''; }
 function zoneInputs(i, prefix) {
@@ -189,16 +193,22 @@ function zoneInputs(i, prefix) {
   return CO.map(k => `<div><label>${esc(CN[k])}</label>
     <input type="number" inputmode="numeric" min="0" placeholder="0" data-i="${i}" data-key="${prefix}_${k}" value="${sv(s[prefix + '_' + k])}"></div>`).join('');
 }
+function netLabelText(c) {
+  return c.isWeekly
+    ? `المطلوب توريده كامل (عمولة ${fmt(c.commission)} مؤجلة للأسبوع)`
+    : 'الإجمالي بعد خصم العمولة';
+}
 
 function render() {
   $('list').innerHTML = reps.map((r, i) => {
     const s = state[r.name];
     const c = calcOf(r.name);
+    const wTag = c.isWeekly ? `<span class="badge">أسبوعي</span>` : '';
     return `
     <div class="card${openSet.has(i) ? ' open' : ''}">
       <div class="head">
         <button class="rep-head" data-toggle="${i}">
-          <span><span class="arrow">‹</span> <span class="rep-name">${esc(r.name)}</span></span>
+          <span><span class="arrow">‹</span> <span class="rep-name">${esc(r.name)}</span>${wTag}</span>
           <span class="rate">عمولة الشحنة: ${r.rate}</span>
         </button>
         <button class="del" data-clear="${i}" title="مسح بيانات المندوب">🗑️</button>
@@ -207,7 +217,7 @@ function render() {
         <div class="grid">
           <div><label>الإجمالي</label><input type="number" inputmode="decimal" min="0" data-i="${i}" data-key="total" value="${sv(s.total)}"></div>
           <div><label>عدد الشحنات</label><input type="text" id="cnt-${i}" readonly value="${c.count}"></div>
-          <div><label>العمولة</label><input type="text" id="comm-${i}" readonly value="${fmt(c.commission)}"></div>
+          <div><label>${c.isWeekly ? 'العمولة (أسبوعي)' : 'العمولة'}</label><input type="text" id="comm-${i}" readonly value="${fmt(c.commission)}"></div>
           <div><label>الباقي</label><div class="rembox${remCls(c.rem)}" id="rem-${i}">${fmt(c.rem)}</div></div>
         </div>
         <div class="zone"><div class="zt">📍 داخل الزون</div><div class="g3">${zoneInputs(i, 'zi')}</div></div>
@@ -221,7 +231,7 @@ function render() {
             <input type="number" inputmode="decimal" min="0" placeholder="المبلغ" data-i="${i}" data-key="voda" value="${sv(s.voda)}">
             ${recvDdHTML(i, 'vodaRecv', s.vodaRecv)}</div></div>
         </div>
-        <div class="result"><span>الإجمالي بعد خصم العمولة</span><b id="net-${i}">${fmt(c.net)}</b></div>
+        <div class="result"><span id="netlbl-${i}">${netLabelText(c)}</span><b id="net-${i}">${fmt(c.net)}</b></div>
       </div>
     </div>`;
   }).join('');
@@ -230,6 +240,7 @@ function updSummary(i) {
   const c = calcOf(reps[i].name);
   $('cnt-' + i).value = c.count;
   $('comm-' + i).value = fmt(c.commission);
+  $('netlbl-' + i).textContent = netLabelText(c);
   $('net-' + i).textContent = fmt(c.net);
   const rb = $('rem-' + i);
   rb.textContent = fmt(c.rem);
@@ -341,6 +352,7 @@ async function persistDay() {
     CO.forEach(k => { zin[k] = Number(s['zi_' + k]) || 0; zout[k] = Number(s['zo_' + k]) || 0; });
     return {
       rep: r.name, total: Number(s.total) || 0, count: c.count, commission: c.commission, rate: rateOf(r.name),
+      payType: r.payType,
       cash: Number(s.cash) || 0, insta: Number(s.insta) || 0, instaRecv: s.instaRecv,
       voda: Number(s.voda) || 0, vodaRecv: s.vodaRecv, zin, zout
     };
