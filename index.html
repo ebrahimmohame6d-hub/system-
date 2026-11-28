@@ -187,7 +187,9 @@ function calcOf(name) {
   const count = zoneSum(s);
   const commission = count * rep.rate;
   const isWeekly = rep.payType === 'weekly';
-  const net = isWeekly ? (Number(s.total) || 0) : ((Number(s.total) || 0) - commission);
+  const totalVal = Number(s.total) || 0;
+  // الأسبوعي: الإجمالي قبل خصم العمولة = الإجمالي كامل، والباقي يبدأ بنفس رقم الإجمالي
+  const net = isWeekly ? totalVal : (totalVal - commission);
   const paid = (Number(s.cash) || 0) + (Number(s.insta) || 0) + (Number(s.voda) || 0);
   return { count, commission, net, rem: net - paid, isWeekly };
 }
@@ -199,16 +201,14 @@ function zoneInputs(i, prefix) {
     <input type="number" inputmode="numeric" min="0" placeholder="0" data-i="${i}" data-key="${prefix}_${k}" value="${sv(s[prefix + '_' + k])}"></div>`).join('');
 }
 function netLabelText(c) {
-  return c.isWeekly
-    ? `المطلوب توريده كامل (عمولة ${fmt(c.commission)} مؤجلة للأسبوع)`
-    : 'الإجمالي بعد خصم العمولة';
+  return c.isWeekly ? 'الإجمالي قبل خصم العمولة' : 'الإجمالي بعد خصم العمولة';
 }
 
 function render() {
   $('list').innerHTML = reps.map((r, i) => {
     const s = state[r.name];
     const c = calcOf(r.name);
-    const wTag = c.isWeekly ? `<span class="badge">أسبوعي</span>` : '';
+    const wTag = c.isWeekly ? `<span class="badge" style="background:rgba(217,119,6,.16);color:#b45309">أسبوعي</span>` : '';
     return `
     <div class="card${openSet.has(i) ? ' open' : ''}">
       <div class="head">
