@@ -23,7 +23,6 @@
     <a class="nav-item" href="manage.html"><span class="ni">👥</span> المناديب</a>
     <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
     <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
-    <a class="nav-item" href="weekly.html"><span class="ni">🗓️</span> العمولات الأسبوعية</a>
   </aside>
 
   <main class="content">
@@ -176,16 +175,13 @@ document.addEventListener('keydown', e => {
 function zoneSum(s) {
   return CO.reduce((a, k) => a + (Number(s['zi_' + k]) || 0) + (Number(s['zo_' + k]) || 0), 0);
 }
-// المندوب الأسبوعي: العمولة متتخصمش من الباقي اليومي، وبتتحسب آخر الأسبوع
 function calcOf(name) {
   const s = state[name];
-  const rep = reps.find(x => x.name === name);
-  const weekly = !!(rep && rep.weekly);
   const count = zoneSum(s);
   const commission = count * rateOf(name);
-  const net = (Number(s.total) || 0) - (weekly ? 0 : commission);
+  const net = (Number(s.total) || 0) - commission;
   const paid = (Number(s.cash) || 0) + (Number(s.insta) || 0) + (Number(s.voda) || 0);
-  return { count, commission, net, rem: net - paid, weekly };
+  return { count, commission, net, rem: net - paid };
 }
 function remCls(v) { return v < 0 ? ' neg' : v === 0 ? ' zero' : ''; }
 function zoneInputs(i, prefix) {
@@ -203,7 +199,7 @@ function render() {
       <div class="head">
         <button class="rep-head" data-toggle="${i}">
           <span><span class="arrow">‹</span> <span class="rep-name">${esc(r.name)}</span></span>
-          <span class="rate">عمولة الشحنة: ${r.rate}</span>${r.weekly ? '<span class="rate wk">أسبوعي</span>' : ''}
+          <span class="rate">عمولة الشحنة: ${r.rate}</span>
         </button>
         <button class="del" data-clear="${i}" title="مسح بيانات المندوب">🗑️</button>
       </div>
@@ -345,7 +341,6 @@ async function persistDay() {
     CO.forEach(k => { zin[k] = Number(s['zi_' + k]) || 0; zout[k] = Number(s['zo_' + k]) || 0; });
     return {
       rep: r.name, total: Number(s.total) || 0, count: c.count, commission: c.commission, rate: rateOf(r.name),
-      weekly: !!r.weekly,
       cash: Number(s.cash) || 0, insta: Number(s.insta) || 0, instaRecv: s.instaRecv,
       voda: Number(s.voda) || 0, vodaRecv: s.vodaRecv, zin, zout
     };
