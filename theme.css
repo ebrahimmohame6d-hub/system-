@@ -219,11 +219,12 @@ td.name{text-align:right}
   main.content{max-width:none;width:100%}
   .side{position:fixed;top:auto;bottom:10px;left:10px;right:10px;width:auto;z-index:70;flex-direction:row;padding:8px;border-radius:22px}
   .side-title{display:none}
-  .nav-item{flex:1;flex-direction:column;gap:2px;padding:8px 4px;font-size:11px;text-align:center;justify-content:center}
+  .nav-item{flex:1;flex-direction:column;gap:2px;padding:8px 2px;font-size:10.5px;text-align:center;justify-content:center}
   .nav-item:hover{transform:none}
   .savebar{bottom:96px}
   .stats{grid-template-columns:1fr 1fr}
   .grid{grid-template-columns:1fr 1fr}
+  .formrow{grid-template-columns:1fr!important}
   .pair{grid-template-columns:1fr}
   .daybar .row{flex-wrap:wrap}
   header h1{font-size:17px}
