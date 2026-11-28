@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>التحويلات</title>
+<title>التحويلات والتحصيلات</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="theme.css">
 </head>
@@ -31,16 +31,35 @@
     <div class="card">
       <div class="ctrl" style="justify-content:space-between;margin-bottom:12px">
         <div class="seg">
-          <button id="modeDay" class="on" onclick="setMode('day')">تحويلات اليوم</button>
-          <button id="modeAll" onclick="setMode('all')">كل الأيام</button>
+          <button type="button" id="mDay" class="on" onclick="setMode('day')">يوم واحد</button>
+          <button type="button" id="mRange" onclick="setMode('range')">فترة زمنية</button>
         </div>
-        <div id="scopeLabel" class="muted"></div>
+        <div style="min-width:170px">
+          <select id="recvFilter" onchange="renderData()">
+            <option value="">كل المستلمين</option>
+          </select>
+        </div>
       </div>
 
-      <div id="dayControls" class="ctrl">
-        <button class="btn" onclick="shift(1)">‹ التالي</button>
-        <input type="date" id="tDate" onchange="onDate(this.value)">
-        <button class="btn" onclick="shift(-1)">السابق ›</button>
+      <div id="dayControls" class="daybar">
+        <div class="row">
+          <button type="button" class="navbtn" onclick="shiftDay(1)">‹ التالي</button>
+          <input type="date" id="dDate" onchange="loadData()">
+          <button type="button" class="navbtn" onclick="shiftDay(-1)">السابق ›</button>
+        </div>
+        <div id="savedDaysWrap"></div>
+      </div>
+
+      <div id="rangeControls" class="formrow" style="display:none;grid-template-columns:1fr 1fr auto">
+        <div>
+          <label>من تاريخ</label>
+          <input type="date" id="fromDate">
+        </div>
+        <div>
+          <label>إلى تاريخ</label>
+          <input type="date" id="toDate">
+        </div>
+        <button type="button" class="btn" onclick="loadData()">عرض</button>
       </div>
     </div>
 
@@ -49,18 +68,43 @@
         <div class="stat s-cash">الكاش<b id="stCash">0</b></div>
         <div class="stat s-insta">انستاباي<b id="stInsta">0</b></div>
         <div class="stat s-voda">فودافون كاش<b id="stVoda">0</b></div>
-        <div class="stat s-all">الإجمالي الكلي<b id="stAll">0</b></div>
+        <div class="stat s-all">إجمالي المتحصل<b id="stAll">0</b></div>
       </div>
     </div>
 
     <div class="card">
-      <h2 class="sec">التحويلات حسب المستلم</h2>
-      <div class="tbl-box"><div id="recvTable" class="tscroll"><div class="muted" style="padding:14px">جاري التحميل...</div></div></div>
+      <h2 class="sec">توزيع التحويلات على المستلمين</h2>
+      <div class="tbl-box">
+        <div class="tscroll">
+          <table>
+            <thead>
+              <tr>
+                <th>المستلم</th>
+                <th>انستاباي</th>
+                <th>فودافون كاش</th>
+                <th>الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody id="recvBody">
+              <tr><td colspan="4" class="muted">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="card">
-      <h2 class="sec">تفصيل تحويلات المناديب</h2>
-      <div class="tbl-box"><div id="repTable" class="tscroll"><div class="muted" style="padding:14px">جاري التحميل...</div></div></div>
+      <h2 class="sec">تفاصيل تحصيلات المناديب</h2>
+      <div class="tbl-box">
+        <div class="tscroll">
+          <table>
+            <thead id="detHead"></thead>
+            <tbody id="detBody">
+              <tr><td colspan="5" class="muted">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -68,7 +112,9 @@
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-let mode = 'day', curDate = '';
+let mode = 'day';
+let savedDaysList = [];
+let loadedEntries = [];
 const $ = id => document.getElementById(id);
 
 function call(action, params = {}) {
@@ -112,137 +158,185 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
-async function render() {
-  $('recvTable').innerHTML = '<div class="muted" style="padding:14px">جاري التحميل...</div>';
-  $('repTable').innerHTML = '<div class="muted" style="padding:14px">جاري التحميل...</div>';
-  try {
-    let rows = [];
-    let daysCount = 0;
-
-    if (mode === 'day') {
-      const data = await call('getDay', { date: curDate });
-      if (data) {
-        rows = data.map(r => ({ ...r, date: curDate }));
-        daysCount = 1;
-      }
-      $('scopeLabel').textContent = 'يوم ' + dmy(curDate) + (daysCount ? '' : ' (مفيش بيانات محفوظة)');
-    } else {
-      const days = (await call('listDays')) || [];
-      const results = await Promise.all(days.map(d => call('getDay', { date: d }).catch(() => null)));
-      results.forEach((arr, idx) => {
-        if (arr) {
-          daysCount++;
-          arr.forEach(r => rows.push({ ...r, date: days[idx] }));
-        }
-      });
-      $('scopeLabel').textContent = 'كل الأيام المحفوظة (' + daysCount + ' يوم)';
-    }
-
-    let totCash = 0, totInsta = 0, totVoda = 0;
-    const recvMap = {};
-    const repRows = [];
-
-    rows.forEach(r => {
-      const c = Number(r.cash) || 0;
-      const ins = Number(r.insta) || 0;
-      const vod = Number(r.voda) || 0;
-      totCash += c;
-      totInsta += ins;
-      totVoda += vod;
-
-      if (ins > 0) {
-        const k = r.instaRecv || 'غير محدد';
-        if (!recvMap[k]) recvMap[k] = { insta: 0, voda: 0 };
-        recvMap[k].insta += ins;
-      }
-      if (vod > 0) {
-        const k = r.vodaRecv || 'غير محدد';
-        if (!recvMap[k]) recvMap[k] = { insta: 0, voda: 0 };
-        recvMap[k].voda += vod;
-      }
-      if (ins > 0 || vod > 0 || c > 0) {
-        repRows.push({
-          date: r.date,
-          rep: r.rep,
-          cash: c,
-          insta: ins,
-          instaRecv: r.instaRecv || '—',
-          voda: vod,
-          vodaRecv: r.vodaRecv || '—',
-          sum: c + ins + vod
-        });
-      }
-    });
-
-    $('stCash').textContent = fmt(totCash);
-    $('stInsta').textContent = fmt(totInsta);
-    $('stVoda').textContent = fmt(totVoda);
-    $('stAll').textContent = fmt(totCash + totInsta + totVoda);
-
-    const recvEntries = Object.entries(recvMap).sort((a, b) => (b[1].insta + b[1].voda) - (a[1].insta + a[1].voda));
-    if (!recvEntries.length) {
-      $('recvTable').innerHTML = '<div class="muted" style="padding:14px">مفيش تحويلات انستاباي أو فودافون كاش</div>';
-    } else {
-      const body = recvEntries.map(([name, v]) => `<tr>
-        <td class="name">${esc(name)}</td>
-        <td class="amt">${fmt(v.insta)}</td>
-        <td class="amt">${fmt(v.voda)}</td>
-        <td><span class="pill pos">${fmt(v.insta + v.voda)}</span></td>
-      </tr>`).join('');
-      $('recvTable').innerHTML = `<table>
-        <thead><tr><th>المستلم</th><th>انستاباي</th><th>فودافون كاش</th><th>الإجمالي</th></tr></thead>
-        <tbody>${body}
-          <tr class="tot"><td class="name">الإجمالي</td><td class="amt">${fmt(totInsta)}</td><td class="amt">${fmt(totVoda)}</td><td><span class="pill">${fmt(totInsta + totVoda)}</span></td></tr>
-        </tbody></table>`;
-    }
-
-    if (!repRows.length) {
-      $('repTable').innerHTML = '<div class="muted" style="padding:14px">مفيش بيانات</div>';
-    } else {
-      const dateTh = mode === 'all' ? '<th>التاريخ</th>' : '';
-      const body = repRows.map(r => `<tr>
-        ${mode === 'all' ? `<td>${dmy(r.date)}</td>` : ''}
-        <td class="name">${esc(r.rep)}</td>
-        <td class="amt">${fmt(r.cash)}</td>
-        <td class="amt">${fmt(r.insta)}</td>
-        <td>${esc(r.instaRecv)}</td>
-        <td class="amt">${fmt(r.voda)}</td>
-        <td>${esc(r.vodaRecv)}</td>
-        <td><span class="pill">${fmt(r.sum)}</span></td>
-      </tr>`).join('');
-      $('repTable').innerHTML = `<table>
-        <thead><tr>${dateTh}<th>المندوب</th><th>كاش</th><th>انستاباي</th><th>مستلم انستا</th><th>فودافون</th><th>مستلم فودافون</th><th>الإجمالي</th></tr></thead>
-        <tbody>${body}</tbody></table>`;
-    }
-  } catch (e) {
-    $('recvTable').innerHTML = '<div class="muted" style="padding:14px">خطأ: ' + esc(e.message) + '</div>';
-    $('repTable').innerHTML = '';
-    toast(e.message, false);
-  }
+function renderSavedDays() {
+  const cur = $('dDate').value;
+  $('savedDaysWrap').innerHTML = `
+    <select onchange="if(this.value){$('dDate').value=this.value;loadData();}">
+      <option value="">-- أيام محفوظة قبل كده --</option>
+      ${savedDaysList.map(d => `<option value="${d}" ${d === cur ? 'selected' : ''}>${dmy(d)}</option>`).join('')}
+    </select>`;
 }
 
 function setMode(m) {
   mode = m;
-  $('modeDay').classList.toggle('on', m === 'day');
-  $('modeAll').classList.toggle('on', m === 'all');
-  $('dayControls').style.display = m === 'day' ? 'flex' : 'none';
-  render();
-}
-function onDate(v) { if (!v) return; curDate = v; render(); }
-function shift(n) {
-  curDate = addDays(curDate || todayISO(), n);
-  $('tDate').value = curDate;
-  render();
+  $('mDay').classList.toggle('on', m === 'day');
+  $('mRange').classList.toggle('on', m === 'range');
+  $('dayControls').style.display = m === 'day' ? '' : 'none';
+  $('rangeControls').style.display = m === 'range' ? 'grid' : 'none';
+  loadData();
 }
 
-(function init() {
+function shiftDay(n) {
+  $('dDate').value = addDays($('dDate').value || todayISO(), n);
+  loadData();
+}
+
+async function loadData() {
+  $('recvBody').innerHTML = '<tr><td colspan="4" class="muted">جاري التحميل...</td></tr>';
+  $('detBody').innerHTML = '<tr><td colspan="5" class="muted">جاري التحميل...</td></tr>';
+  loadedEntries = [];
+
+  try {
+    if (mode === 'day') {
+      const date = $('dDate').value || todayISO();
+      renderSavedDays();
+      const rows = (await call('getDay', { date })) || [];
+      rows.forEach(r => loadedEntries.push({ date, ...r }));
+    } else {
+      const from = $('fromDate').value;
+      const to = $('toDate').value;
+      if (!from || !to) return toast('اختار تاريخ البداية والنهاية', false);
+      const targets = savedDaysList.filter(d => d >= from && d <= to);
+      const results = await Promise.all(targets.map(async d => {
+        const rows = (await call('getDay', { date: d })) || [];
+        return rows.map(r => ({ date: d, ...r }));
+      }));
+      results.forEach(arr => loadedEntries.push(...arr));
+    }
+    renderData();
+  } catch (e) {
+    toast(e.message, false);
+  }
+}
+
+function renderData() {
+  const filterRecv = $('recvFilter').value;
+  let totalCash = 0, totalInsta = 0, totalVoda = 0;
+  const byRecv = {};
+  const addRecvAmt = (name, type, amt) => {
+    if (!amt) return;
+    const key = name || 'غير محدد';
+    if (!byRecv[key]) byRecv[key] = { insta: 0, voda: 0 };
+    byRecv[key][type] += amt;
+  };
+
+  const rowsToShow = [];
+
+  loadedEntries.forEach(r => {
+    const cash = filterRecv ? 0 : (Number(r.cash) || 0);
+    const insta = (!filterRecv || r.instaRecv === filterRecv) ? (Number(r.insta) || 0) : 0;
+    const voda = (!filterRecv || r.vodaRecv === filterRecv) ? (Number(r.voda) || 0) : 0;
+
+    totalCash += cash;
+    totalInsta += insta;
+    totalVoda += voda;
+
+    if (!filterRecv || r.instaRecv === filterRecv) addRecvAmt(r.instaRecv, 'insta', Number(r.insta) || 0);
+    if (!filterRecv || r.vodaRecv === filterRecv) addRecvAmt(r.vodaRecv, 'voda', Number(r.voda) || 0);
+
+    if (cash > 0 || insta > 0 || voda > 0) {
+      rowsToShow.push({
+        date: r.date,
+        rep: r.rep,
+        cash,
+        insta,
+        instaRecv: r.instaRecv,
+        voda,
+        vodaRecv: r.vodaRecv,
+        sum: cash + insta + voda
+      });
+    }
+  });
+
+  $('stCash').textContent = fmt(totalCash);
+  $('stInsta').textContent = fmt(totalInsta);
+  $('stVoda').textContent = fmt(totalVoda);
+  $('stAll').textContent = fmt(totalCash + totalInsta + totalVoda);
+
+  const recvKeys = Object.keys(byRecv);
+  if (!recvKeys.length) {
+    $('recvBody').innerHTML = '<tr><td colspan="4" class="muted">مفيش تحويلات في الفترة دي</td></tr>';
+  } else {
+    $('recvBody').innerHTML = recvKeys.map(k => {
+      const o = byRecv[k];
+      return `<tr>
+        <td class="name">${esc(k)}</td>
+        <td class="amt">${fmt(o.insta)}</td>
+        <td class="amt">${fmt(o.voda)}</td>
+        <td class="amt"><span class="pill pos">${fmt(o.insta + o.voda)}</span></td>
+      </tr>`;
+    }).join('') + `
+      <tr class="tot">
+        <td class="name">الإجمالي</td>
+        <td class="amt">${fmt(totalInsta)}</td>
+        <td class="amt">${fmt(totalVoda)}</td>
+        <td class="amt">${fmt(totalInsta + totalVoda)}</td>
+      </tr>`;
+  }
+
+  const showDateCol = mode === 'range';
+  $('detHead').innerHTML = `<tr>
+    ${showDateCol ? '<th>التاريخ</th>' : ''}
+    <th>المندوب</th>
+    <th>كاش</th>
+    <th>انستاباي</th>
+    <th>فودافون كاش</th>
+    <th>الإجمالي</th>
+  </tr>`;
+
+  if (!rowsToShow.length) {
+    $('detBody').innerHTML = `<tr><td colspan="${showDateCol ? 6 : 5}" class="muted">مفيش تحصيلات مسجلة</td></tr>`;
+  } else {
+    $('detBody').innerHTML = rowsToShow.map(r => {
+      const instaTxt = r.insta > 0 ? `${fmt(r.insta)}${r.instaRecv ? ` <span class="badge">${esc(r.instaRecv)}</span>` : ''}` : '<span class="amt zero">0</span>';
+      const vodaTxt = r.voda > 0 ? `${fmt(r.voda)}${r.vodaRecv ? ` <span class="badge">${esc(r.vodaRecv)}</span>` : ''}` : '<span class="amt zero">0</span>';
+      return `<tr>
+        ${showDateCol ? `<td>${dmy(r.date)}</td>` : ''}
+        <td class="name">${esc(r.rep)}</td>
+        <td class="amt ${r.cash ? '' : 'zero'}">${fmt(r.cash)}</td>
+        <td class="amt">${instaTxt}</td>
+        <td class="amt">${vodaTxt}</td>
+        <td class="amt"><span class="pill">${fmt(r.sum)}</span></td>
+      </tr>`;
+    }).join('') + `
+      <tr class="tot">
+        <td class="name" colspan="${showDateCol ? 2 : 1}">الإجمالي</td>
+        <td class="amt">${fmt(totalCash)}</td>
+        <td class="amt">${fmt(totalInsta)}</td>
+        <td class="amt">${fmt(totalVoda)}</td>
+        <td class="amt">${fmt(totalCash + totalInsta + totalVoda)}</td>
+      </tr>`;
+  }
+}
+
+(async function init() {
   const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = dark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   paintThemeBtn(theme);
-  curDate = todayISO();
-  $('tDate').value = curDate;
-  render();
+
+  const today = todayISO();
+  $('dDate').value = today;
+  $('fromDate').value = addDays(today, -6);
+  $('toDate').value = today;
+
+  try {
+    const [days, recvs] = await Promise.all([call('listDays'), call('getReceivers')]);
+    savedDaysList = days || [];
+    if (savedDaysList.length && !savedDaysList.includes(today)) {
+      $('dDate').value = savedDaysList[0];
+    }
+    renderSavedDays();
+    (recvs || []).forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      $('recvFilter').appendChild(opt);
+    });
+  } catch (e) {
+    toast(e.message, false);
+  }
+  loadData();
 })();
 </script>
 </body>
