@@ -23,6 +23,7 @@
     <a class="nav-item on" href="manage.html"><span class="ni">👥</span> المناديب</a>
     <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
     <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
+    <a class="nav-item" href="weekly.html"><span class="ni">🗓️</span> حساب الأسبوعي</a>
   </aside>
 
   <main class="content">
@@ -33,9 +34,10 @@
 
     <div class="card">
       <h2>إضافة مندوب جديد</h2>
-      <div class="formrow">
+      <div class="formrow" style="grid-template-columns:1fr 110px 150px">
         <div><label>اسم المندوب</label><input type="text" id="newName" placeholder="اكتب الاسم"></div>
         <div><label>العمولة</label><input type="number" id="newRate" value="27" min="1"></div>
+        <div><label>نظام الحساب</label><div id="typeBox"></div></div>
       </div>
       <button class="btn full" id="btnAdd" onclick="addRep()">➕ إضافة المندوب</button>
     </div>
@@ -121,6 +123,14 @@ document.addEventListener('click', e => {
 });
 
 // ---------- الصفحة ----------
+function renderTypeDd() {
+  const opts = [
+    { v: 'daily', l: 'يومي' },
+    { v: 'weekly', l: 'أسبوعي' }
+  ];
+  $('typeBox').innerHTML = ddHTML(opts, 'daily', 'يومي', 'id="newType"');
+}
+
 function render() {
   const list = $('repList'), box = $('delBox');
   if (!reps.length) {
@@ -128,27 +138,53 @@ function render() {
     box.innerHTML = '<div class="muted">مفيش مناديب</div>';
     return;
   }
-  list.innerHTML = reps.map(r =>
-    `<li><span class="rep-name">${esc(r.name)}</span><span class="rate">العمولة: ${r.rate}</span></li>`
-  ).join('');
+  list.innerHTML = reps.map((r, idx) => {
+    const isW = r.payType === 'weekly';
+    const badge = isW
+      ? '<span class="badge" style="background:rgba(95,156,134,.18);color:#3f7a66">أسبوعي</span>'
+      : '<span class="badge">يومي</span>';
+    return `<li>
+      <span><span class="rep-name">${esc(r.name)}</span>${badge}</span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <button type="button" class="btn" style="padding:5px 10px;font-size:12px" onclick="togglePayType(${idx})">
+          ${isW ? 'تحويل ليومي' : 'تحويل لأسبوعي'}
+        </button>
+        <span class="rate">العمولة: ${r.rate}</span>
+      </span>
+    </li>`;
+  }).join('');
   const opts = [{ v: '', l: '-- اختار المندوب --' }].concat(reps.map(r => ({ v: r.name, l: r.name })));
   box.innerHTML = ddHTML(opts, '', '-- اختار المندوب --', 'id="delSelect"');
 }
+
+async function togglePayType(idx) {
+  const r = reps[idx];
+  if (!r) return;
+  const nextType = r.payType === 'weekly' ? 'daily' : 'weekly';
+  try {
+    await call('updateRep', { name: r.name, rate: r.rate, payType: nextType });
+    toast('تم تحويل ' + r.name + ' إلى نظام ' + (nextType === 'weekly' ? 'الأسبوعي' : 'اليومي'), true);
+    await loadReps();
+  } catch (e) { toast(e.message, false); }
+}
+
 async function loadReps() {
   try { reps = (await call('getReps')) || []; render(); }
   catch (e) { toast('تعذر تحميل المناديب: ' + e.message, false); }
 }
 async function addRep() {
-  const nameEl = $('newName'), rateEl = $('newRate');
+  const nameEl = $('newName'), rateEl = $('newRate'), typeEl = $('newType');
   const name = nameEl.value.trim();
   const rate = Number(rateEl.value);
+  const payType = typeEl ? typeEl.dataset.value : 'daily';
   if (!name) return toast('اكتب اسم المندوب', false);
   if (!(rate > 0)) return toast('اكتب العمولة', false);
   const btn = $('btnAdd');
   btn.disabled = true;
   try {
-    await call('addRep', { name, rate });
+    await call('addRep', { name, rate, payType });
     nameEl.value = ''; rateEl.value = '27';
+    renderTypeDd();
     toast('تم إضافة ' + name, true);
     await loadReps();
   } catch (e) { toast(e.message, false); }
@@ -174,6 +210,7 @@ async function deleteRep() {
   const theme = dark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   paintThemeBtn(theme);
+  renderTypeDd();
   loadReps();
 })();
 </script>
