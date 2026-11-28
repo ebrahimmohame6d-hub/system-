@@ -169,12 +169,13 @@ async function collectRows() {
   return { rows: all, days: n };
 }
 
-// صافي ربح الشركة = (سعر الشركة − عمولة المندوب للشحنة) × عدد الشحنات
-// إجمالي الأرباح الموجودة حالياً = صافي ربح الشركة + عمولات المناديب الأسبوعيين المؤجلة
 function compute(rows) {
   const CO = cfg.keys;
   const co = {};
-  CO.forEach(k => { co[k] = { inN: 0, inP: 0, outN: 0, outP: 0 }; });
+  CO.forEach(k => {
+    const hasOut = cfg.prices.outZone[k] != null;
+    co[k] = { inN: 0, inP: 0, outN: 0, outP: 0, hasOut };
+  });
   const reps = {};
   const weeklyOwed = {};
 
@@ -185,10 +186,11 @@ function compute(rows) {
 
     let rowCount = 0;
     CO.forEach(k => {
+      const hasOut = co[k].hasOut;
       const zi = Number(r.zin && r.zin[k]) || 0;
-      const zo = Number(r.zout && r.zout[k]) || 0;
+      const zo = hasOut ? (Number(r.zout && r.zout[k]) || 0) : 0;
       const pi = zi * (cfg.prices.inZone[k] - rate);
-      const po = zo * (cfg.prices.outZone[k] - rate);
+      const po = hasOut ? zo * (cfg.prices.outZone[k] - rate) : 0;
       co[k].inN += zi; co[k].inP += pi;
       co[k].outN += zo; co[k].outP += po;
       reps[r.rep].n += zi + zo;
@@ -258,22 +260,27 @@ async function render() {
     $('coCards').innerHTML = CO.map(k => {
       const n = co[k].inN + co[k].outN;
       const p = co[k].inP + co[k].outP;
+      const subText = co[k].hasOut
+        ? `داخل: ${co[k].inN} | خارج: ${co[k].outN}`
+        : `داخل الزون فقط: ${co[k].inN}`;
       return `<div class="co co-${k}">
         <h3>${esc(cfg.names[k])}</h3>
-        <div class="sub">داخل: ${co[k].inN} | خارج: ${co[k].outN}</div>
+        <div class="sub">${subText}</div>
         <div class="pv">${fmt(p)}</div>
         <div class="sub">إجمالي الشحنات: ${n}</div>
       </div>`;
     }).join('');
 
     const coRows = CO.map(k => {
-      const { inN, outN, inP, outP } = co[k];
+      const { inN, outN, inP, outP, hasOut } = co[k];
+      const outNCell = hasOut ? `<span class="pill">${outN}</span>` : `<span class="muted">—</span>`;
+      const outPCell = hasOut ? `<span class="${pillCls(outP)}">${fmt(outP)}</span>` : `<span class="muted">—</span>`;
       return `<tr>
         <td class="name"><span class="dot dot-${k}"></span>${esc(cfg.names[k])}</td>
         <td><span class="pill">${inN}</span></td>
         <td><span class="${pillCls(inP)}">${fmt(inP)}</span></td>
-        <td><span class="pill">${outN}</span></td>
-        <td><span class="${pillCls(outP)}">${fmt(outP)}</span></td>
+        <td>${outNCell}</td>
+        <td>${outPCell}</td>
         <td><span class="pill">${inN + outN}</span></td>
         <td><span class="${pillCls(inP + outP)}">${fmt(inP + outP)}</span></td>
       </tr>`;
