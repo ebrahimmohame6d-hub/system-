@@ -24,6 +24,7 @@
     <a class="nav-item" href="transfers.html"><span class="ni">💸</span> التحويلات</a>
     <a class="nav-item" href="profit.html"><span class="ni">📈</span> أرباح الشركة</a>
     <a class="nav-item on" href="weekly.html"><span class="ni">🗓️</span> حساب الأسبوعي</a>
+    <a class="nav-item" href="gamiya.html"><span class="ni">🤝</span> الجمعية</a>
   </aside>
 
   <main class="content">
@@ -32,43 +33,37 @@
       <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:0">
         <div>
           <label>المندوب</label>
-          <div id="repBox"><div class="muted">جاري التحميل...</div></div>
+          <select id="repSelect" onchange="loadWeekly()"></select>
         </div>
         <div>
           <label>من تاريخ</label>
-          <input type="date" id="fromDate" onchange="onFilterChange()">
+          <input type="date" id="wFrom" onchange="loadWeekly()">
         </div>
         <div>
           <label>إلى تاريخ</label>
-          <input type="date" id="toDate" onchange="onFilterChange()">
+          <input type="date" id="wTo" onchange="loadWeekly()">
         </div>
       </div>
 
       <div class="ctrl" style="margin-top:12px">
-        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setQuick('last7')">آخر 7 أيام</button>
-        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setQuick('thisWeek')">الأسبوع الحالي</button>
-        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setQuick('lastWeek')">الأسبوع الماضي</button>
-        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setQuick('all')">كل الأيام</button>
+        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setPreset('thisWeek')">الأسبوع الحالي</button>
+        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setPreset('last7')">آخر 7 أيام</button>
+        <button type="button" class="btn" style="padding:8px 12px;font-size:13px" onclick="setPreset('lastWeek')">الأسبوع الماضي</button>
       </div>
     </div>
 
     <div class="card">
-      <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
-        <div class="stat s-all">أيام العمل<b id="sDays">0</b></div>
-        <div class="stat s-insta">إجمالي الشحنات<b id="sCount">0</b></div>
-        <div class="stat s-cash">إجمالي التحصيل<b id="sCollected">0</b></div>
+      <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+        <div class="stat s-all">إجمالي الشحنات<b id="stCount">0</b></div>
+        <div class="stat s-insta">إجمالي المبيعات<b id="stTotal">0</b></div>
+        <div class="stat s-cash">مستحق المندوب (العمولة)<b id="stComm">0</b></div>
       </div>
-      <div class="big">
-        <span>إجمالي العمولة المستحقة للمندوب</span>
-        <b id="totalComm">0</b>
-      </div>
+      <div class="big"><span>صافي عمولة المندوب الأسبوعية</span><b id="bigComm">0</b></div>
     </div>
 
     <div class="card">
-      <h2 class="sec">تفصيل الأيام والعمولات</h2>
-      <div class="tbl-box">
-        <div id="wTable" class="tscroll"><div class="muted" style="padding:14px">جاري التحميل...</div></div>
-      </div>
+      <h2 class="sec">تفصيل الأيام</h2>
+      <div class="tbl-box"><div id="daysTable" class="tscroll"><div class="muted" style="padding:14px">جاري التحميل...</div></div></div>
     </div>
   </main>
 </div>
@@ -76,8 +71,7 @@
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwtdP1cSfohJVXLaJmOWcokwK9DJEJbAwUVSt1bG695tGMc5oAdmFJzbppo86mCPhw_/exec';
 
-const AR_DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-let reps = [], selectedRep = '';
+let reps = [];
 const $ = id => document.getElementById(id);
 
 function call(action, params = {}) {
@@ -104,7 +98,6 @@ function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replac
 function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
 function addDays(iso, n) { const [y,m,d] = iso.split('-').map(Number); const x = new Date(y, m-1, d+n); return x.getFullYear() + '-' + pad(x.getMonth()+1) + '-' + pad(x.getDate()); }
 function dmy(iso) { const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3]+'/'+m[2]+'/'+m[1] : esc(iso); }
-function dayNameAr(iso) { const [y,m,d] = iso.split('-').map(Number); return AR_DAYS[new Date(y, m-1, d).getDay()]; }
 
 function paintThemeBtn(th) { const b = $('themeBtn'); if (b) b.textContent = th === 'dark' ? '☀️' : '🌙'; }
 function toggleTheme(btn) {
@@ -122,145 +115,79 @@ function toast(text, ok) {
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
 }
 
-// ---------- القايمة المنسدلة ----------
-function ddHTML(opts, value, placeholder, extra = '') {
-  const cur = value !== '' ? opts.find(o => o.v === value) : null;
-  return `<div class="dd${cur ? '' : ' empty'}" data-value="${esc(cur ? value : '')}" ${extra}>
-    <button type="button" class="dd-btn"><span class="dd-label">${esc(cur ? cur.l : placeholder)}</span><span class="dd-chev">▾</span></button>
-    <div class="dd-menu">${opts.map((o, k) =>
-      `<div class="dd-item${cur && o.v === value ? ' sel' : ''}${o.v === '' ? ' placeholder' : ''}" data-v="${esc(o.v)}" style="--k:${k}">${esc(o.l)}</div>`
-    ).join('')}</div></div>`;
-}
-function pickDd(item) {
-  const root = item.closest('.dd');
-  const v = item.dataset.v;
-  root.dataset.value = v;
-  root.querySelector('.dd-label').textContent = item.textContent;
-  root.classList.toggle('empty', v === '');
-  root.querySelectorAll('.dd-item').forEach(x => x.classList.toggle('sel', x === item && v !== ''));
-  root.classList.remove('open');
-  if (root.id === 'repSelect') {
-    selectedRep = v;
-    loadWeekly();
-  }
-}
-document.addEventListener('click', e => {
-  const item = e.target.closest('.dd-item');
-  if (item) { pickDd(item); return; }
-  const btn = e.target.closest('.dd-btn');
-  const root = btn ? btn.closest('.dd') : null;
-  const wasOpen = root && root.classList.contains('open');
-  document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
-  if (root && !wasOpen) root.classList.add('open');
-});
-
-function setQuick(type) {
+function setPreset(type) {
   const today = todayISO();
   if (type === 'last7') {
-    $('fromDate').value = addDays(today, -6);
-    $('toDate').value = today;
+    $('wFrom').value = addDays(today, -6);
+    $('wTo').value = today;
   } else if (type === 'thisWeek') {
     const d = new Date();
     const diffToSat = (d.getDay() + 1) % 7;
     const sat = addDays(today, -diffToSat);
-    $('fromDate').value = sat;
-    $('toDate').value = addDays(sat, 6);
+    $('wFrom').value = sat;
+    $('wTo').value = addDays(sat, 6);
   } else if (type === 'lastWeek') {
     const d = new Date();
     const diffToSat = (d.getDay() + 1) % 7;
     const sat = addDays(today, -diffToSat);
-    $('fromDate').value = addDays(sat, -7);
-    $('toDate').value = addDays(sat, -1);
-  } else if (type === 'all') {
-    $('fromDate').value = '';
-    $('toDate').value = '';
+    $('wFrom').value = addDays(sat, -7);
+    $('wTo').value = addDays(sat, -1);
   }
   loadWeekly();
-}
-
-function onFilterChange() {
-  loadWeekly();
-}
-
-function renderRepDropdown() {
-  if (!reps.length) {
-    $('repBox').innerHTML = '<div class="muted">مفيش مناديب</div>';
-    return;
-  }
-  // ترتيب المناديب الأسبوعيين في الأول
-  const sorted = [...reps].sort((a, b) => (b.payType === 'weekly') - (a.payType === 'weekly'));
-  if (!selectedRep) {
-    const weeklyFirst = sorted.find(r => r.payType === 'weekly');
-    selectedRep = weeklyFirst ? weeklyFirst.name : sorted[0].name;
-  }
-  const opts = sorted.map(r => ({
-    v: r.name,
-    l: r.payType === 'weekly' ? `${r.name} (أسبوعي)` : r.name
-  }));
-  $('repBox').innerHTML = ddHTML(opts, selectedRep, '-- اختار المندوب --', 'id="repSelect"');
 }
 
 async function loadWeekly() {
-  if (!selectedRep) {
-    $('wTable').innerHTML = '<div class="muted" style="padding:14px">اختار المندوب الأول</div>';
+  const rep = $('repSelect').value;
+  if (!rep) {
+    $('daysTable').innerHTML = '<div class="muted" style="padding:14px">اختار مندوب</div>';
     return;
   }
-  $('wTable').innerHTML = '<div class="muted" style="padding:14px">جاري التحميل...</div>';
+  $('daysTable').innerHTML = '<div class="muted" style="padding:14px">جاري التحميل...</div>';
   try {
-    const rows = (await call('getRepWeekly', {
-      rep: selectedRep,
-      from: $('fromDate').value,
-      to: $('toDate').value
+    const days = (await call('getRepWeekly', {
+      rep,
+      from: $('wFrom').value,
+      to: $('wTo').value
     })) || [];
 
-    let totCount = 0, totCollected = 0, totComm = 0;
-    rows.forEach(r => {
-      totCount += Number(r.count) || 0;
-      totCollected += Number(r.total) || 0;
-      totComm += Number(r.commission) || 0;
+    let totCount = 0, totSales = 0, totComm = 0;
+    days.forEach(d => {
+      totCount += Number(d.count) || 0;
+      totSales += Number(d.total) || 0;
+      totComm += Number(d.commission) || 0;
     });
 
-    $('sDays').textContent = rows.length;
-    $('sCount').textContent = fmt(totCount);
-    $('sCollected').textContent = fmt(totCollected);
-    $('totalComm').textContent = fmt(totComm);
+    $('stCount').textContent = fmt(totCount);
+    $('stTotal').textContent = fmt(totSales);
+    $('stComm').textContent = fmt(totComm);
+    $('bigComm').textContent = fmt(totComm);
 
-    if (!rows.length) {
-      $('wTable').innerHTML = '<div class="muted" style="padding:14px">مفيش أيام مسجلة للمندوب ده في الفترة المختارة</div>';
+    if (!days.length) {
+      $('daysTable').innerHTML = '<div class="muted" style="padding:14px">مفيش أيام مسجلة للمندوب ده في الفترة المختارة</div>';
       return;
     }
 
-    const body = rows.map(r => `<tr>
-      <td class="name">${dmy(r.date)} <span class="badge">${dayNameAr(r.date)}</span></td>
-      <td><span class="amt">${fmt(r.total)}</span></td>
-      <td><span class="pill">${r.count}</span></td>
-      <td><span class="amt">${fmt(r.rate)}</span></td>
-      <td><span class="pill pos">${fmt(r.commission)}</span></td>
+    const body = days.map(d => `<tr>
+      <td>${dmy(d.date)}</td>
+      <td><span class="pill">${d.count}</span></td>
+      <td class="amt">${fmt(d.rate)}</td>
+      <td class="amt">${fmt(d.total)}</td>
+      <td><span class="pill pos">${fmt(d.commission)}</span></td>
     </tr>`).join('');
 
-    $('wTable').innerHTML = `<table>
-      <thead>
-        <tr>
-          <th>التاريخ</th>
-          <th>إجمالي التحصيل</th>
-          <th>عدد الشحنات</th>
-          <th>سعر الشحنة</th>
-          <th>العمولة المستحقة</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${body}
+    $('daysTable').innerHTML = `<table>
+      <thead><tr><th>التاريخ</th><th>عدد الشحنات</th><th>العمولة</th><th>إجمالي المبيعات</th><th>مستحق المندوب</th></tr></thead>
+      <tbody>${body}
         <tr class="tot">
-          <td class="name">الإجمالي (${rows.length} يوم)</td>
-          <td><span class="amt">${fmt(totCollected)}</span></td>
+          <td>الإجمالي (${days.length} يوم)</td>
           <td><span class="pill">${totCount}</span></td>
           <td>—</td>
+          <td class="amt">${fmt(totSales)}</td>
           <td><span class="pill pos">${fmt(totComm)}</span></td>
         </tr>
-      </tbody>
-    </table>`;
+      </tbody></table>`;
   } catch (e) {
-    $('wTable').innerHTML = '<div class="muted" style="padding:14px">خطأ: ' + esc(e.message) + '</div>';
+    $('daysTable').innerHTML = '<div class="muted" style="padding:14px">خطأ: ' + esc(e.message) + '</div>';
     toast(e.message, false);
   }
 }
@@ -271,17 +198,17 @@ async function loadWeekly() {
   document.documentElement.setAttribute('data-theme', theme);
   paintThemeBtn(theme);
 
-  const today = todayISO();
-  $('fromDate').value = addDays(today, -6);
-  $('toDate').value = today;
-
   try {
     reps = (await call('getReps')) || [];
-    renderRepDropdown();
-    await loadWeekly();
+    const sorted = [...reps].sort((a, b) => (b.payType === 'weekly' ? 1 : 0) - (a.payType === 'weekly' ? 1 : 0));
+    $('repSelect').innerHTML = sorted.map(r =>
+      `<option value="${esc(r.name)}">${esc(r.name)}${r.payType === 'weekly' ? ' (أسبوعي)' : ''}</option>`
+    ).join('');
   } catch (e) {
-    toast('تعذر تحميل البيانات: ' + e.message, false);
+    toast('تعذر تحميل المناديب: ' + e.message, false);
   }
+
+  setPreset('thisWeek');
 })();
 </script>
 </body>
